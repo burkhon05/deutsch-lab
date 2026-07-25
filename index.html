@@ -718,8 +718,10 @@ function bulkAdd() {
 }
 function addOne(w) {
   const clean = w.trim(); if (!clean) return;
-  if (state.words.find(x => x.word.toLowerCase() === clean.toLowerCase())) return;
-  state.words.push({ id: Date.now()+Math.random(), word: clean, status:'new', card:null, score:0, attempts:0 });
+  // Capitalize first letter — German nouns always capitalized
+  const word = clean.charAt(0).toUpperCase() + clean.slice(1);
+  if (state.words.find(x => x.word.toLowerCase() === word.toLowerCase())) return;
+  state.words.push({ id: Date.now()+Math.random(), word: word, status:'new', card:null, score:0, attempts:0 });
   saveState();
 }
 function removeWord(id) {
@@ -741,10 +743,10 @@ function renderChips() {
   const hasAny = state.words.length > 0;
   const hasNew = state.words.some(w=>w.status==='new');
   const hasLoaded = state.words.some(w=>w.status==='loaded');
-  document.getElementById('genAllBtn').style.display = hasNew ? '' : 'none';
-  document.getElementById('startBtn').style.display = hasLoaded ? '' : 'none';
-  document.getElementById('archiveBtn').style.display = hasLoaded ? '' : 'none';
-  document.getElementById('clearBtn').style.display = hasAny ? '' : 'none';
+  document.getElementById('genAllBtn').style.display = hasNew ? 'inline-flex' : 'none';
+  document.getElementById('startBtn').style.display = hasLoaded ? 'inline-flex' : 'none';
+  document.getElementById('archiveBtn').style.display = hasLoaded ? 'inline-flex' : 'none';
+  document.getElementById('clearBtn').style.display = hasAny ? 'inline-flex' : 'none';
 }
 
 // ═══════════════════════════════════════════════

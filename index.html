@@ -620,9 +620,13 @@ function nav(id, btn) {
 //  API KEY
 // ═══════════════════════════════════════════════
 function saveKey(v) {
-  apiKey = v.trim();
+  const trimmed = v.trim();
+  // Only save if it looks like a real key (not empty, not our placeholder dots)
+  if (!trimmed || trimmed.includes('••')) return;
+  apiKey = trimmed;
   localStorage.setItem('dl2-key', apiKey);
   updateKeyUI();
+  toast('API key saved ✓', 'ok');
 }
 function updateKeyUI() {
   ['apiStatus','settingsStatus'].forEach(id => {
@@ -631,10 +635,17 @@ function updateKeyUI() {
     el.className = 'api-status ' + (apiKey ? 'set' : 'unset');
     el.textContent = apiKey ? '● Active' : '● Not set';
   });
+  // Show masked placeholder but keep value EMPTY so oninput isn't triggered with masked text
   const inp = document.getElementById('apiKeyInput');
-  if (inp) inp.value = apiKey ? apiKey.slice(0,8) + '••••••' : '';
+  if (inp) {
+    inp.value = '';
+    inp.placeholder = apiKey ? apiKey.slice(0,8) + '••••••••  (key saved — paste new to change)' : 'sk-ant-…';
+  }
   const si = document.getElementById('settingsKey');
-  if (si && !si._touched) si.placeholder = apiKey ? apiKey.slice(0,8) + '••••••' : 'sk-ant-…';
+  if (si) {
+    si.value = '';
+    si.placeholder = apiKey ? apiKey.slice(0,8) + '••••••••  (key saved)' : 'sk-ant-…';
+  }
 }
 updateKeyUI();
 
@@ -721,7 +732,9 @@ function addOne(w) {
   // Capitalize first letter — German nouns always capitalized
   const word = clean.charAt(0).toUpperCase() + clean.slice(1);
   if (state.words.find(x => x.word.toLowerCase() === word.toLowerCase())) return;
-  state.words.push({ id: Date.now()+Math.random(), word: word, status:'new', card:null, score:0, attempts:0 });
+  // Use string id to avoid floating point issues in onclick handlers
+  const id = 'w' + Date.now() + Math.floor(Math.random()*10000);
+  state.words.push({ id, word, status:'new', card:null, score:0, attempts:0 });
   saveState();
 }
 function removeWord(id) {
@@ -820,18 +833,21 @@ async function apiCall(opts) {
 //  GENERATE CARDS
 // ═══════════════════════════════════════════════
 async function genAll() {
-  if (!apiKey) { toast('Enter your API key first','err'); return; }
+  if (!apiKey) { toast('⚠ Enter your Anthropic API key first — paste it in the field above','err'); return; }
   const newW = state.words.filter(w=>w.status==='new');
-  if (!newW.length) return;
+  if (!newW.length) { toast('No new words to generate',''); return; }
   const btn = document.getElementById('genAllBtn');
   btn.disabled = true; btn.textContent = '⏳ Generating…';
+  try {
   for (const w of newW) {
     await genCard(w);
     await new Promise(r=>setTimeout(r,350));
   }
+  } catch(e) { console.error(e); }
   btn.disabled = false; btn.textContent = '⚡ Generate Cards';
-  toast('All cards ready! 🎉','ok');
   renderChips(); updateHeader();
+  const loaded = state.words.filter(w=>w.status==='loaded').length;
+  if (loaded > 0) toast(`${loaded} cards ready! 🎉`,'ok');
 }
 async function genCard(wo) {
   for (let attempt=1; attempt<=3; attempt++) {

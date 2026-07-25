@@ -1,0 +1,1271 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Deutsch Lab</title>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,300;0,600;0,900;1,300;1,600&family=Inter:wght@350;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+/* ── TOKENS ── */
+:root {
+  --ink: #0d0f14;
+  --ink2: #1a1d26;
+  --ink3: #242838;
+  --line: #2e3345;
+  --line2: #3d4460;
+  --gold: #e8a020;
+  --gold-dim: #7a5510;
+  --gold-glow: rgba(232,160,32,.15);
+  --green: #3ecf6e;
+  --red: #f56565;
+  --blue: #5b9cf6;
+  --lilac: #a78bfa;
+  --text: #dde2f0;
+  --text2: #8b93b0;
+  --text3: #5a6280;
+  --r: 12px;
+  --r-sm: 7px;
+  --ease: cubic-bezier(.4,0,.2,1);
+}
+[data-theme="light"] {
+  --ink: #f0f2fa; --ink2: #e4e7f5; --ink3: #d8dcee;
+  --line: #c8cde0; --line2: #b0b7d0;
+  --text: #0d1020; --text2: #3d4460; --text3: #8b93b0;
+  --gold-glow: rgba(232,160,32,.1);
+}
+
+/* ── RESET ── */
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+html{scroll-behavior:smooth;}
+body{background:var(--ink);color:var(--text);font-family:'Inter',sans-serif;font-size:14px;line-height:1.5;min-height:100vh;transition:background .25s,color .25s;}
+button,input,textarea,select{font-family:inherit;font-size:inherit;}
+button{cursor:pointer;border:none;background:none;}
+a{color:inherit;text-decoration:none;}
+::selection{background:var(--gold);color:#000;}
+
+/* ── SCROLLBAR ── */
+::-webkit-scrollbar{width:5px;height:5px;}
+::-webkit-scrollbar-track{background:transparent;}
+::-webkit-scrollbar-thumb{background:var(--line2);border-radius:3px;}
+
+/* ── LAYOUT ── */
+.app{display:grid;grid-template-columns:220px 1fr;grid-template-rows:auto 1fr;min-height:100vh;}
+.topbar{grid-column:1/-1;display:flex;align-items:center;justify-content:space-between;padding:0 24px;height:56px;border-bottom:1px solid var(--line);background:var(--ink2);position:sticky;top:0;z-index:200;}
+.sidebar{border-right:1px solid var(--line);background:var(--ink2);padding:16px 0;position:sticky;top:56px;height:calc(100vh - 56px);overflow-y:auto;display:flex;flex-direction:column;}
+.main{overflow-y:auto;height:calc(100vh - 56px);}
+.page{display:none;padding:28px;max-width:900px;}
+.page.active{display:block;}
+
+/* ── TOPBAR ── */
+.logo{font-family:'Fraunces',serif;font-size:18px;font-weight:900;letter-spacing:-.5px;color:var(--gold);}
+.logo em{color:var(--text);font-style:italic;font-weight:300;}
+.topbar-right{display:flex;align-items:center;gap:10px;}
+.stat-pill{background:var(--ink3);border:1px solid var(--line);border-radius:20px;padding:4px 12px;font-size:12px;color:var(--text2);}
+.stat-pill b{color:var(--gold);}
+.icon-btn{width:34px;height:34px;border-radius:var(--r-sm);display:flex;align-items:center;justify-content:center;background:var(--ink3);border:1px solid var(--line);color:var(--text2);font-size:15px;transition:.18s var(--ease);}
+.icon-btn:hover{border-color:var(--gold);color:var(--gold);}
+
+/* ── SIDEBAR NAV ── */
+.nav-section{padding:0 10px 6px;margin-bottom:4px;}
+.nav-label{font-size:10px;letter-spacing:1.2px;text-transform:uppercase;color:var(--text3);padding:0 8px;margin-bottom:4px;font-weight:600;}
+.nav-item{display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:var(--r-sm);color:var(--text2);font-size:13px;font-weight:500;transition:.15s var(--ease);cursor:pointer;width:100%;}
+.nav-item:hover{background:var(--ink3);color:var(--text);}
+.nav-item.active{background:var(--gold-glow);color:var(--gold);border:1px solid rgba(232,160,32,.2);}
+.nav-item .ni-icon{font-size:15px;width:18px;text-align:center;}
+.nav-item .ni-badge{margin-left:auto;background:var(--gold);color:#000;border-radius:10px;padding:1px 7px;font-size:10px;font-weight:700;}
+.nav-divider{height:1px;background:var(--line);margin:8px 10px;}
+.sidebar-bottom{margin-top:auto;padding:12px 10px;}
+
+/* ── BUTTONS ── */
+.btn{display:inline-flex;align-items:center;gap:7px;padding:9px 16px;border-radius:var(--r);font-weight:600;font-size:13px;transition:.17s var(--ease);white-space:nowrap;}
+.btn-gold{background:var(--gold);color:#0d0f14;}
+.btn-gold:hover{background:#f0b030;}
+.btn-gold:disabled{opacity:.4;cursor:not-allowed;}
+.btn-ghost{background:var(--ink3);color:var(--text);border:1px solid var(--line);}
+.btn-ghost:hover{border-color:var(--gold);color:var(--gold);}
+.btn-red{background:rgba(245,101,101,.12);color:var(--red);border:1px solid rgba(245,101,101,.25);}
+.btn-red:hover{background:rgba(245,101,101,.22);}
+.btn-sm{padding:6px 12px;font-size:12px;}
+.btn-xs{padding:4px 9px;font-size:11px;border-radius:var(--r-sm);}
+
+/* ── INPUTS ── */
+.input{background:var(--ink3);border:1px solid var(--line);border-radius:var(--r);padding:10px 14px;color:var(--text);font-size:14px;outline:none;width:100%;transition:border-color .15s;}
+.input:focus{border-color:var(--gold);}
+.input::placeholder{color:var(--text3);}
+.input-mono{font-family:'JetBrains Mono',monospace;}
+textarea.input{resize:vertical;min-height:80px;}
+
+/* ── CARDS ── */
+.card{background:var(--ink2);border:1px solid var(--line);border-radius:var(--r);}
+.card-pad{padding:20px;}
+
+/* ── SECTION TITLE ── */
+.page-title{font-family:'Fraunces',serif;font-size:26px;font-weight:600;margin-bottom:4px;}
+.page-sub{color:var(--text2);font-size:13px;margin-bottom:22px;}
+.section-head{font-size:10px;letter-spacing:1.3px;text-transform:uppercase;color:var(--text3);font-weight:600;margin-bottom:10px;}
+
+/* ── WORD CHIPS ── */
+.chip-grid{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:16px;}
+.chip{display:inline-flex;align-items:center;gap:6px;background:var(--ink3);border:1px solid var(--line);border-radius:20px;padding:4px 10px 4px 12px;font-size:12px;font-family:'JetBrains Mono',monospace;}
+.chip-dot{width:6px;height:6px;border-radius:50%;background:var(--line2);}
+.chip.loaded .chip-dot{background:var(--green);}
+.chip.loading .chip-dot{background:var(--gold);animation:blink 1s infinite;}
+.chip.error .chip-dot{background:var(--red);}
+.chip-rm{color:var(--text3);font-size:13px;line-height:1;padding:1px;}
+.chip-rm:hover{color:var(--red);}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
+
+/* ── UPLOAD ZONE ── */
+.upload-zone{border:2px dashed var(--line);border-radius:var(--r);padding:24px;text-align:center;cursor:pointer;transition:.2s var(--ease);position:relative;margin-bottom:14px;}
+.upload-zone:hover,.upload-zone.drag{border-color:var(--gold);background:var(--gold-glow);}
+.upload-zone input{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%;}
+
+/* ── FLASHCARD ── */
+.fc-shell{perspective:1100px;cursor:pointer;user-select:none;}
+.fc-inner{position:relative;width:100%;min-height:380px;transform-style:preserve-3d;transition:transform .5s cubic-bezier(.4,0,.2,1);}
+.fc-inner.flipped{transform:rotateY(180deg);}
+.fc-face{position:absolute;inset:0;border-radius:16px;padding:32px;backface-visibility:hidden;-webkit-backface-visibility:hidden;display:flex;flex-direction:column;}
+.fc-front{background:var(--ink2);border:1px solid var(--line);align-items:center;justify-content:center;text-align:center;}
+.fc-back{background:var(--ink3);border:1px solid var(--gold-dim);transform:rotateY(180deg);overflow-y:auto;}
+.fc-word{font-family:'Fraunces',serif;font-size:52px;font-weight:600;line-height:1.05;margin-bottom:6px;}
+.fc-article{display:inline-block;background:var(--gold-glow);color:var(--gold);border:1px solid rgba(232,160,32,.25);border-radius:20px;padding:3px 12px;font-size:11px;font-weight:600;letter-spacing:.5px;margin-bottom:14px;}
+.fc-ipa{font-family:'JetBrains Mono',monospace;font-size:14px;color:var(--text2);margin-bottom:4px;}
+.fc-pron{font-size:13px;color:var(--text3);margin-bottom:14px;}
+.fc-hint{font-size:11px;color:var(--text3);margin-top:14px;}
+.speak-btn{display:inline-flex;align-items:center;gap:8px;background:var(--gold-glow);border:1px solid rgba(232,160,32,.3);border-radius:24px;padding:9px 20px;color:var(--gold);font-size:13px;font-weight:600;transition:.17s var(--ease);}
+.speak-btn:hover{background:rgba(232,160,32,.25);}
+.speak-btn.playing{animation:speakPulse 1s infinite;}
+@keyframes speakPulse{0%,100%{box-shadow:0 0 0 0 rgba(232,160,32,.3)}50%{box-shadow:0 0 0 8px rgba(232,160,32,0)}}
+.wave{display:none;gap:3px;align-items:center;height:16px;}
+.wave.show{display:flex;}
+.wave span{display:inline-block;width:3px;border-radius:2px;background:var(--gold);animation:wv .8s infinite ease-in-out;}
+.wave span:nth-child(1){height:5px;animation-delay:0s;}
+.wave span:nth-child(2){height:10px;animation-delay:.12s;}
+.wave span:nth-child(3){height:16px;animation-delay:.24s;}
+.wave span:nth-child(4){height:10px;animation-delay:.36s;}
+.wave span:nth-child(5){height:5px;animation-delay:.48s;}
+@keyframes wv{0%,100%{transform:scaleY(1)}50%{transform:scaleY(1.5)}}
+.back-label{font-size:10px;letter-spacing:1.3px;text-transform:uppercase;color:var(--gold);font-weight:600;margin-bottom:6px;}
+.back-section{margin-bottom:18px;}
+.trans-row{display:flex;gap:8px;align-items:flex-start;margin-bottom:4px;}
+.lang-tag{font-size:10px;background:var(--ink2);border:1px solid var(--line);border-radius:4px;padding:2px 6px;color:var(--text3);font-weight:600;letter-spacing:.4px;margin-top:2px;white-space:nowrap;}
+.ex-item{padding:7px 0;border-bottom:1px solid var(--line);font-size:13px;line-height:1.5;}
+.ex-item:last-child{border:none;}
+.ex-de{color:var(--text);}
+.ex-ru{color:var(--text2);font-style:italic;margin-top:2px;}
+.gram-chips{display:flex;flex-wrap:wrap;gap:5px;}
+.gram-chip{background:var(--ink2);border:1px solid var(--line);border-radius:5px;padding:3px 9px;font-size:11px;color:var(--blue);font-family:'JetBrains Mono',monospace;}
+.rate-row{display:flex;justify-content:center;gap:10px;margin-top:16px;}
+.deck-bar{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:8px;}
+
+/* ── QUIZ ── */
+.quiz-modes{display:grid;grid-template-columns:repeat(auto-fit,minmax(155px,1fr));gap:9px;margin-bottom:22px;}
+.mode-tile{background:var(--ink2);border:2px solid var(--line);border-radius:var(--r);padding:16px;cursor:pointer;transition:.17s var(--ease);}
+.mode-tile:hover,.mode-tile.sel{border-color:var(--gold);background:var(--gold-glow);}
+.mode-tile .mt-icon{font-size:22px;margin-bottom:6px;}
+.mode-tile .mt-name{font-weight:600;font-size:13px;}
+.mode-tile .mt-desc{font-size:11px;color:var(--text2);margin-top:2px;}
+.q-progress{height:3px;background:var(--line);border-radius:2px;margin-bottom:24px;overflow:hidden;}
+.q-bar{height:100%;background:var(--gold);border-radius:2px;transition:width .35s;}
+.q-word{font-family:'Fraunces',serif;font-size:28px;font-weight:600;text-align:center;margin-bottom:6px;}
+.q-sub{color:var(--text2);font-size:13px;text-align:center;margin-bottom:20px;}
+.q-opts{display:flex;flex-direction:column;gap:8px;}
+.q-opt{background:var(--ink2);border:2px solid var(--line);border-radius:var(--r);padding:12px 16px;cursor:pointer;font-size:14px;text-align:left;transition:.15s var(--ease);color:var(--text);}
+.q-opt:hover:not(:disabled){border-color:var(--gold);}
+.q-opt.ok{border-color:var(--green);background:rgba(62,207,110,.08);color:var(--green);}
+.q-opt.no{border-color:var(--red);background:rgba(245,101,101,.08);color:var(--red);}
+.q-opt:disabled{cursor:default;}
+.q-inp{background:var(--ink3);border:2px solid var(--line);border-radius:var(--r);padding:13px;color:var(--text);font-family:'JetBrains Mono',monospace;font-size:17px;width:100%;outline:none;text-align:center;transition:.15s;margin-bottom:10px;}
+.q-inp:focus{border-color:var(--gold);}
+.q-inp.ok{border-color:var(--green);background:rgba(62,207,110,.06);}
+.q-inp.no{border-color:var(--red);background:rgba(245,101,101,.06);}
+.q-fb{text-align:center;padding:9px;border-radius:8px;font-size:13px;font-weight:600;margin:10px 0;}
+.q-fb.ok{background:rgba(62,207,110,.1);color:var(--green);}
+.q-fb.no{background:rgba(245,101,101,.1);color:var(--red);}
+.score-wrap{text-align:center;padding:40px 20px;}
+.score-ring{position:relative;width:120px;height:120px;margin:0 auto 18px;}
+.score-ring svg{transform:rotate(-90deg);}
+.score-inner{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;flex-direction:column;}
+.score-pct{font-family:'Fraunces',serif;font-size:30px;font-weight:600;color:var(--gold);}
+
+/* ── PROGRESS DASHBOARD ── */
+.kpi-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px;margin-bottom:24px;}
+.kpi{background:var(--ink2);border:1px solid var(--line);border-radius:var(--r);padding:18px 14px;text-align:center;}
+.kpi-val{font-family:'Fraunces',serif;font-size:36px;font-weight:600;line-height:1;}
+.kpi-lbl{font-size:11px;color:var(--text2);margin-top:5px;}
+.donut-layout{display:grid;grid-template-columns:140px 1fr;gap:20px;align-items:center;}
+.donut-wrap{position:relative;width:140px;height:140px;}
+.donut-wrap svg{transform:rotate(-90deg);}
+.donut-center{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;}
+.donut-val{font-family:'Fraunces',serif;font-size:26px;font-weight:600;}
+.donut-sub{font-size:10px;color:var(--text2);}
+.legend{display:flex;flex-direction:column;gap:9px;}
+.leg-row{display:flex;align-items:center;gap:9px;font-size:13px;}
+.leg-dot{width:9px;height:9px;border-radius:50%;flex-shrink:0;}
+.leg-val{margin-left:auto;font-weight:600;font-family:'JetBrains Mono',monospace;}
+.heatmap{display:flex;flex-wrap:wrap;gap:4px;}
+.hm{width:13px;height:13px;border-radius:3px;background:var(--line);}
+.hm.l1{background:rgba(232,160,32,.2);}
+.hm.l2{background:rgba(232,160,32,.5);}
+.hm.l3{background:var(--gold);}
+.pos-bars{display:flex;flex-direction:column;gap:9px;}
+.pos-row{display:flex;align-items:center;gap:10px;font-size:13px;}
+.pos-lbl{min-width:82px;color:var(--text2);text-transform:capitalize;}
+.pos-track{flex:1;height:7px;background:var(--line);border-radius:4px;overflow:hidden;}
+.pos-fill{height:100%;border-radius:4px;background:var(--blue);}
+.pos-n{min-width:26px;text-align:right;font-size:11px;color:var(--text2);font-family:'JetBrains Mono',monospace;}
+
+/* ── ARCHIVE ── */
+.archive-grid{display:flex;flex-direction:column;gap:10px;}
+.arch-card{background:var(--ink2);border:1px solid var(--line);border-radius:var(--r);padding:16px 20px;display:flex;align-items:center;gap:16px;}
+.arch-card:hover{border-color:var(--line2);}
+.arch-icon{font-size:26px;flex-shrink:0;}
+.arch-body{flex:1;min-width:0;}
+.arch-name{font-weight:600;font-size:14px;margin-bottom:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.arch-meta{font-size:12px;color:var(--text2);}
+.arch-actions{display:flex;gap:7px;flex-shrink:0;}
+.arch-badge{display:inline-block;background:var(--gold-glow);color:var(--gold);border:1px solid rgba(232,160,32,.2);border-radius:10px;padding:2px 9px;font-size:10px;font-weight:700;margin-left:8px;}
+
+/* ── API KEY BANNER ── */
+.api-banner{background:rgba(232,160,32,.07);border:1px solid rgba(232,160,32,.2);border-radius:var(--r);padding:14px 18px;margin-bottom:18px;display:flex;align-items:center;gap:14px;flex-wrap:wrap;}
+.api-status{display:inline-flex;align-items:center;gap:5px;font-size:11px;font-weight:700;padding:3px 10px;border-radius:10px;}
+.api-status.set{background:rgba(62,207,110,.12);color:var(--green);}
+.api-status.unset{background:rgba(245,101,101,.1);color:var(--red);}
+
+/* ── TOAST ── */
+.toast-stack{position:fixed;bottom:20px;right:20px;display:flex;flex-direction:column;gap:7px;z-index:999;}
+.toast{background:var(--ink3);border:1px solid var(--line);border-radius:10px;padding:10px 16px;font-size:13px;animation:toastIn .25s var(--ease);max-width:300px;pointer-events:none;}
+.toast.ok{border-color:var(--green);}
+.toast.err{border-color:var(--red);}
+@keyframes toastIn{from{transform:translateY(10px);opacity:0}to{transform:translateY(0);opacity:1}}
+
+/* ── EMPTY ── */
+.empty-state{text-align:center;padding:52px 20px;color:var(--text2);}
+.empty-state .ei{font-size:44px;margin-bottom:12px;}
+.empty-state h3{font-family:'Fraunces',serif;font-size:20px;color:var(--text);margin-bottom:8px;}
+
+/* ── MODAL ── */
+.modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.6);backdrop-filter:blur(4px);z-index:500;display:none;align-items:center;justify-content:center;}
+.modal-bg.open{display:flex;}
+.modal{background:var(--ink2);border:1px solid var(--line);border-radius:16px;padding:28px;max-width:460px;width:90%;animation:modalIn .2s var(--ease);}
+@keyframes modalIn{from{transform:scale(.95);opacity:0}to{transform:scale(1);opacity:1}}
+.modal-title{font-family:'Fraunces',serif;font-size:20px;font-weight:600;margin-bottom:16px;}
+.modal-actions{display:flex;gap:9px;justify-content:flex-end;margin-top:20px;}
+
+/* ── UTILS ── */
+.row{display:flex;gap:9px;align-items:center;flex-wrap:wrap;}
+.gap-y{margin-bottom:16px;}
+.gap-y-lg{margin-bottom:24px;}
+.divider{height:1px;background:var(--line);margin:18px 0;}
+.text-sm{font-size:12px;}
+.text-muted{color:var(--text2);}
+.mono{font-family:'JetBrains Mono',monospace;}
+.badge{display:inline-block;border-radius:4px;padding:2px 7px;font-size:11px;font-weight:600;}
+.badge-green{background:rgba(62,207,110,.12);color:var(--green);}
+.badge-amber{background:rgba(232,160,32,.12);color:var(--gold);}
+.badge-gray{background:var(--ink3);color:var(--text2);}
+
+/* ── PRINT ── */
+@media print{
+  .sidebar,.topbar,.speak-btn,.rate-row,.deck-bar,.api-banner,.toast-stack{display:none!important;}
+  .app{display:block;}
+  .main{height:auto;}
+  .page{display:block!important;padding:10px;}
+  .fc-inner{transform:none!important;min-height:auto;position:relative;}
+  .fc-face{position:relative;}
+  .fc-front{display:none;}
+  .fc-back{transform:none;page-break-inside:avoid;margin-bottom:14px;}
+}
+@media(max-width:768px){
+  .app{grid-template-columns:1fr;}
+  .sidebar{display:none;}
+  .fc-word{font-size:36px;}
+  .fc-face{padding:22px;}
+  .page{padding:16px;}
+}
+</style>
+</head>
+<body>
+
+<div class="app">
+<!-- ── TOPBAR ── -->
+<header class="topbar">
+  <div class="logo">Deutsch<em>Lab</em></div>
+  <div class="topbar-right">
+    <div class="stat-pill">Words <b id="hdrTotal">0</b></div>
+    <div class="stat-pill">Mastered <b id="hdrMastered">0</b></div>
+    <button class="icon-btn" onclick="toggleTheme()" id="themeBtn" title="Toggle theme">☀️</button>
+  </div>
+</header>
+
+<!-- ── SIDEBAR ── -->
+<aside class="sidebar">
+  <div class="nav-section">
+    <div class="nav-label">Learn</div>
+    <button class="nav-item active" onclick="nav('add',this)"><span class="ni-icon">＋</span>Add Words</button>
+    <button class="nav-item" onclick="nav('learn',this)"><span class="ni-icon">📖</span>Flashcards</button>
+    <button class="nav-item" onclick="nav('quiz',this)"><span class="ni-icon">🧠</span>Quiz</button>
+  </div>
+  <div class="nav-divider"></div>
+  <div class="nav-section">
+    <div class="nav-label">Track</div>
+    <button class="nav-item" onclick="nav('progress',this)"><span class="ni-icon">📊</span>Progress</button>
+    <button class="nav-item" onclick="nav('archive',this)"><span class="ni-icon">🗂</span>Archive <span class="ni-badge" id="archBadge" style="display:none;">0</span></button>
+  </div>
+  <div class="nav-divider"></div>
+  <div class="sidebar-bottom">
+    <button class="nav-item" onclick="nav('settings',this)"><span class="ni-icon">⚙️</span>Settings</button>
+  </div>
+</aside>
+
+<!-- ── MAIN ── -->
+<main class="main">
+
+<!-- ADD WORDS -->
+<div id="page-add" class="page active">
+  <div class="page-title">Add Words</div>
+  <div class="page-sub">Type German words, paste a list, or upload a file.</div>
+
+  <div class="api-banner" id="apiBanner">
+    <div style="flex:1;min-width:0;">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;">
+        <span style="font-weight:600;">API Key</span>
+        <span class="api-status unset" id="apiStatus">● Not set</span>
+      </div>
+      <div class="text-sm text-muted">Paste your Anthropic key — stored in your browser only. Get one at console.anthropic.com</div>
+    </div>
+    <input type="password" class="input input-mono" id="apiKeyInput" placeholder="sk-ant-…" style="max-width:240px;" oninput="saveKey(this.value)">
+  </div>
+
+  <div class="row gap-y">
+    <input class="input input-mono" id="wordInput" placeholder="e.g. Apfel, laufen, schön …" style="flex:1;" onkeydown="if(event.key==='Enter')addWord()">
+    <button class="btn btn-gold" onclick="addWord()">＋ Add</button>
+  </div>
+
+  <div class="upload-zone" id="dropZone">
+    <input type="file" id="fileInput" accept=".txt,.pdf,.csv" onchange="handleFile(event)">
+    <div style="font-size:22px;margin-bottom:6px;">📄</div>
+    <div style="font-weight:600;margin-bottom:3px;">Upload a file</div>
+    <div class="text-sm text-muted">.txt (one word per line) · .csv · .pdf</div>
+  </div>
+
+  <div style="margin-bottom:12px;">
+    <div class="section-head">Paste a word list</div>
+    <div class="row" style="align-items:flex-start;">
+      <textarea class="input input-mono" id="bulkInput" placeholder="Apfel&#10;laufen&#10;schön&#10;…" rows="3" style="flex:1;font-size:13px;"></textarea>
+      <button class="btn btn-ghost" onclick="bulkAdd()" style="flex-shrink:0;">Add All</button>
+    </div>
+  </div>
+
+  <div id="chipGrid" class="chip-grid"></div>
+
+  <div class="divider"></div>
+  <div class="row">
+    <button class="btn btn-gold" onclick="genAll()" id="genAllBtn" style="display:none;">⚡ Generate Cards</button>
+    <button class="btn btn-ghost" onclick="nav('learn',document.querySelector('.nav-item:nth-child(2)'))" id="startBtn" style="display:none;">▶ Start Flashcards</button>
+    <button class="btn btn-ghost" onclick="archiveDeck()" id="archiveBtn" style="display:none;">🗂 Archive Deck</button>
+    <button class="btn btn-red btn-sm" onclick="clearAll()" id="clearBtn" style="display:none;">🗑 Clear All</button>
+  </div>
+</div>
+
+<!-- FLASHCARDS -->
+<div id="page-learn" class="page">
+  <div class="page-title">Flashcards</div>
+  <div class="page-sub">Click a card to flip. Rate to track your progress.</div>
+
+  <div id="learnEmpty" class="empty-state">
+    <div class="ei">📚</div>
+    <h3>No cards yet</h3>
+    <p>Add words and generate cards first.</p>
+  </div>
+
+  <div id="learnContent" style="display:none;">
+    <div class="deck-bar">
+      <div class="row">
+        <button class="btn btn-ghost btn-sm" onclick="prevCard()">← Prev</button>
+        <span class="mono text-muted text-sm" id="deckCtr">1 / 1</span>
+        <button class="btn btn-ghost btn-sm" onclick="nextCard()">Next →</button>
+      </div>
+      <div class="row">
+        <button class="btn btn-ghost btn-sm" onclick="shuffleDeck()">🔀</button>
+        <button class="btn btn-ghost btn-sm" onclick="window.print()">🖨</button>
+      </div>
+    </div>
+
+    <div class="fc-shell gap-y-lg" onclick="flipCard()">
+      <div class="fc-inner" id="fcInner">
+        <div class="fc-face fc-front">
+          <div class="fc-article" id="fcArticle" style="display:none;"></div>
+          <div class="fc-word" id="fcWord">—</div>
+          <div class="fc-ipa" id="fcIpa"></div>
+          <div class="fc-pron" id="fcPron"></div>
+          <button class="speak-btn" id="speakBtn" onclick="event.stopPropagation();doSpeak()" style="display:none;margin-top:8px;">
+            <span id="speakIcon">🔊</span>
+            <div class="wave" id="speakWave"><span></span><span></span><span></span><span></span><span></span></div>
+            <span id="speakLbl">Pronounce</span>
+          </button>
+          <div id="speakErr" style="font-size:12px;color:var(--red);margin-top:8px;display:none;"></div>
+          <div class="fc-hint">Tap to reveal</div>
+        </div>
+        <div class="fc-face fc-back">
+          <div class="back-section">
+            <div class="back-label">Translation</div>
+            <div id="bkTrans"></div>
+          </div>
+          <div class="back-section">
+            <div class="back-label">Examples</div>
+            <div id="bkEx"></div>
+          </div>
+          <div class="back-section">
+            <div class="back-label">Grammar</div>
+            <div class="gram-chips" id="bkGram"></div>
+          </div>
+          <div class="back-section" id="bkMnemSec" style="display:none;">
+            <div class="back-label">Memory Tip 💡</div>
+            <div id="bkMnem" style="font-size:13px;color:var(--text2);font-style:italic;"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="rate-row">
+      <button class="btn btn-red" onclick="rate('hard')">😓 Hard</button>
+      <button class="btn btn-ghost" onclick="rate('ok')">🙂 OK</button>
+      <button class="btn btn-gold" onclick="rate('easy')">⭐ Easy</button>
+    </div>
+  </div>
+</div>
+
+<!-- QUIZ -->
+<div id="page-quiz" class="page">
+  <div id="quizHome">
+    <div class="page-title">Quiz</div>
+    <div class="page-sub">Choose a mode and test your knowledge.</div>
+    <div class="quiz-modes">
+      <div class="mode-tile sel" onclick="selMode('mc',this)">
+        <div class="mt-icon">🔤</div><div class="mt-name">Multiple Choice</div>
+        <div class="mt-desc">Pick the Russian translation</div>
+      </div>
+      <div class="mode-tile" onclick="selMode('type',this)">
+        <div class="mt-icon">⌨️</div><div class="mt-name">Type It</div>
+        <div class="mt-desc">See Russian → write German</div>
+      </div>
+      <div class="mode-tile" onclick="selMode('fill',this)">
+        <div class="mt-icon">📝</div><div class="mt-name">Fill in Blank</div>
+        <div class="mt-desc">Complete the example sentence</div>
+      </div>
+      <div class="mode-tile" onclick="selMode('gender',this)">
+        <div class="mt-icon">🏷️</div><div class="mt-name">Gender</div>
+        <div class="mt-desc">der / die / das?</div>
+      </div>
+    </div>
+    <button class="btn btn-gold" style="font-size:14px;padding:11px 28px;" onclick="startQuiz()">Start Quiz →</button>
+  </div>
+
+  <div id="quizActive" style="display:none;max-width:560px;">
+    <div class="q-progress"><div class="q-bar" id="qBar" style="width:0%"></div></div>
+    <div id="qBody"></div>
+  </div>
+
+  <div id="quizScore" style="display:none;">
+    <div class="score-wrap">
+      <div class="score-ring">
+        <svg width="120" height="120" viewBox="0 0 120 120">
+          <circle cx="60" cy="60" r="50" fill="none" stroke="var(--line)" stroke-width="8"/>
+          <circle id="scoreCir" cx="60" cy="60" r="50" fill="none" stroke="var(--gold)"
+            stroke-width="8" stroke-linecap="round" stroke-dasharray="314" stroke-dashoffset="314"/>
+        </svg>
+        <div class="score-inner">
+          <div class="score-pct" id="scorePct">—</div>
+          <div class="text-sm text-muted">score</div>
+        </div>
+      </div>
+      <div style="font-size:22px;margin-bottom:6px;" id="scoreEmoji">—</div>
+      <div class="text-muted text-sm gap-y" id="scoreSub">—</div>
+      <div class="row" style="justify-content:center;gap:10px;margin-top:18px;">
+        <button class="btn btn-gold" onclick="startQuiz()">Retry</button>
+        <button class="btn btn-ghost" onclick="showQuizHome()">← Change Mode</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- PROGRESS -->
+<div id="page-progress" class="page">
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:22px;flex-wrap:wrap;gap:8px;">
+    <div>
+      <div class="page-title">Progress</div>
+      <div class="page-sub" style="margin-bottom:0;">Your learning statistics</div>
+    </div>
+    <button class="btn btn-ghost btn-sm" onclick="resetProgress()">🔄 Reset</button>
+  </div>
+  <div id="progressBody"></div>
+</div>
+
+<!-- ARCHIVE -->
+<div id="page-archive" class="page">
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:22px;flex-wrap:wrap;gap:8px;">
+    <div>
+      <div class="page-title">Archive</div>
+      <div class="page-sub" style="margin-bottom:0;">Completed or saved word decks</div>
+    </div>
+    <button class="btn btn-ghost btn-sm" onclick="openNewDeckModal()">＋ New Deck</button>
+  </div>
+  <div id="archiveBody"></div>
+</div>
+
+<!-- SETTINGS -->
+<div id="page-settings" class="page">
+  <div class="page-title">Settings</div>
+  <div class="page-sub">Configure your Deutsch Lab.</div>
+  <div class="card card-pad gap-y-lg">
+    <div class="section-head">API Key</div>
+    <div class="row">
+      <input type="password" class="input input-mono" id="settingsKey" placeholder="sk-ant-…" style="flex:1;" oninput="saveKey(this.value)">
+      <span class="api-status" id="settingsStatus">● Not set</span>
+    </div>
+    <div class="text-sm text-muted">Your key is stored only in your browser's localStorage. Never shared.</div>
+  </div>
+  <div class="divider"></div>
+  <div class="card card-pad gap-y-lg">
+    <div class="section-head">Data</div>
+    <div class="row">
+      <button class="btn btn-ghost" onclick="exportData()">⬇ Export JSON</button>
+      <label class="btn btn-ghost" style="cursor:pointer;">⬆ Import JSON<input type="file" accept=".json" onchange="importData(event)" style="display:none;"></label>
+    </div>
+    <div class="divider" style="margin:10px 0;"></div>
+    <button class="btn btn-red btn-sm" onclick="nukeAll()">⚠ Delete All Data</button>
+  </div>
+  <div class="divider"></div>
+  <div class="card card-pad">
+    <div class="section-head">About</div>
+    <div class="text-sm text-muted">Deutsch Lab · Built with Claude · Version 2.0</div>
+    <div class="text-sm text-muted" style="margin-top:4px;">Vocabulary cards powered by Claude claude-sonnet-4-6.</div>
+  </div>
+</div>
+
+</main>
+</div>
+
+<!-- MODALS -->
+<div class="modal-bg" id="modalBg" onclick="closeModal()">
+  <div class="modal" onclick="event.stopPropagation()">
+    <div class="modal-title" id="modalTitle">—</div>
+    <div id="modalBody"></div>
+    <div class="modal-actions" id="modalActions"></div>
+  </div>
+</div>
+
+<div class="toast-stack" id="toastStack"></div>
+
+<script>
+// ═══════════════════════════════════════════════
+//  STATE
+// ═══════════════════════════════════════════════
+let state = {
+  words: [],       // active deck
+  archives: [],    // [{id, name, date, words:[]}]
+  sessions: [],    // ISO date strings for heatmap
+};
+
+let apiKey = '';
+let deckIdx = 0, deckOrder = [], flipped = false;
+let qMode = 'mc', qQueue = [], qCur = 0, qScore = 0;
+let currentSpeak = '';
+
+// ═══════════════════════════════════════════════
+//  PERSIST
+// ═══════════════════════════════════════════════
+function loadState() {
+  try {
+    const s = localStorage.getItem('dl2-state');
+    if (s) state = { ...state, ...JSON.parse(s) };
+    apiKey = localStorage.getItem('dl2-key') || '';
+  } catch(e) {}
+}
+function saveState() {
+  try { localStorage.setItem('dl2-state', JSON.stringify(state)); } catch(e) {}
+}
+loadState();
+
+// ═══════════════════════════════════════════════
+//  THEME
+// ═══════════════════════════════════════════════
+const savedTheme = localStorage.getItem('dl2-theme') || 'dark';
+if (savedTheme === 'light') document.documentElement.setAttribute('data-theme','light');
+document.getElementById('themeBtn').textContent = savedTheme === 'light' ? '🌙' : '☀️';
+function toggleTheme() {
+  const isDark = document.documentElement.getAttribute('data-theme') !== 'light';
+  document.documentElement.setAttribute('data-theme', isDark ? 'light' : '');
+  localStorage.setItem('dl2-theme', isDark ? 'light' : 'dark');
+  document.getElementById('themeBtn').textContent = isDark ? '🌙' : '☀️';
+}
+
+// ═══════════════════════════════════════════════
+//  NAV
+// ═══════════════════════════════════════════════
+function nav(id, btn) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(b => b.classList.remove('active'));
+  document.getElementById('page-' + id).classList.add('active');
+  if (btn) btn.classList.add('active');
+  if (id === 'learn')    renderLearn();
+  if (id === 'progress') renderProgress();
+  if (id === 'archive')  renderArchive();
+  if (id === 'settings') renderSettings();
+  updateHeader();
+}
+
+// ═══════════════════════════════════════════════
+//  API KEY
+// ═══════════════════════════════════════════════
+function saveKey(v) {
+  apiKey = v.trim();
+  localStorage.setItem('dl2-key', apiKey);
+  updateKeyUI();
+}
+function updateKeyUI() {
+  ['apiStatus','settingsStatus'].forEach(id => {
+    const el = document.getElementById(id);
+    if (!el) return;
+    el.className = 'api-status ' + (apiKey ? 'set' : 'unset');
+    el.textContent = apiKey ? '● Active' : '● Not set';
+  });
+  const inp = document.getElementById('apiKeyInput');
+  if (inp) inp.value = apiKey ? apiKey.slice(0,8) + '••••••' : '';
+  const si = document.getElementById('settingsKey');
+  if (si && !si._touched) si.placeholder = apiKey ? apiKey.slice(0,8) + '••••••' : 'sk-ant-…';
+}
+updateKeyUI();
+
+// ═══════════════════════════════════════════════
+//  SPEECH
+// ═══════════════════════════════════════════════
+function setSpeakUI(playing) {
+  const btn = document.getElementById('speakBtn');
+  const icon = document.getElementById('speakIcon');
+  const wave = document.getElementById('speakWave');
+  const lbl = document.getElementById('speakLbl');
+  if (!btn) return;
+  btn.classList.toggle('playing', playing);
+  if (icon) icon.style.display = playing ? 'none' : '';
+  if (wave) wave.classList.toggle('show', playing);
+  if (lbl) lbl.textContent = playing ? 'Speaking…' : 'Pronounce';
+}
+function tryWebSpeech(text, onFail) {
+  if (!window.speechSynthesis) { onFail(); return; }
+  function attempt(n) {
+    const voices = speechSynthesis.getVoices();
+    const v = voices.find(v=>v.lang==='de-DE') || voices.find(v=>v.lang.startsWith('de'));
+    if (!v && n > 0) { setTimeout(() => attempt(n-1), 200); return; }
+    speechSynthesis.cancel();
+    const utt = new SpeechSynthesisUtterance(text);
+    utt.lang = 'de-DE'; utt.rate = 0.82;
+    if (v) utt.voice = v;
+    let started = false;
+    utt.onstart = () => { started = true; setSpeakUI(true); };
+    utt.onend = () => setSpeakUI(false);
+    utt.onerror = e => {
+      setSpeakUI(false);
+      if (!started || (e.error && e.error!=='interrupted' && e.error!=='canceled')) onFail();
+    };
+    speechSynthesis.speak(utt);
+    setTimeout(() => { if (!started) { speechSynthesis.cancel(); onFail(); } }, 900);
+  }
+  attempt(10);
+}
+function tryGoogleTTS(text, onFail) {
+  try {
+    const url = 'https://translate.google.com/translate_tts?ie=UTF-8&tl=de&client=tw-ob&q=' + encodeURIComponent(text);
+    const a = new Audio(url);
+    a.onplay = () => setSpeakUI(true);
+    a.onended = () => setSpeakUI(false);
+    a.onerror = () => { setSpeakUI(false); onFail(); };
+    a.play().catch(() => onFail());
+  } catch(e) { onFail(); }
+}
+function doSpeak(text) {
+  const t = text || currentSpeak; if (!t) return;
+  const err = document.getElementById('speakErr');
+  if (err) err.style.display = 'none';
+  tryWebSpeech(t, () => tryGoogleTTS(t, () => {
+    setSpeakUI(false);
+    if (err) { err.style.display='block'; err.textContent='⚠ No German voice. Try Chrome or Edge.'; }
+  }));
+}
+if (window.speechSynthesis) {
+  speechSynthesis.onvoiceschanged = () => speechSynthesis.getVoices();
+  speechSynthesis.getVoices();
+}
+
+// ═══════════════════════════════════════════════
+//  ADD WORDS
+// ═══════════════════════════════════════════════
+function addWord() {
+  const inp = document.getElementById('wordInput');
+  const raw = inp.value.trim(); if (!raw) return;
+  raw.split(/[,\n]+/).map(w=>w.trim()).filter(Boolean).forEach(addOne);
+  inp.value = '';
+  renderChips(); updateHeader();
+}
+function bulkAdd() {
+  const ta = document.getElementById('bulkInput');
+  const raw = ta.value.trim(); if (!raw) { toast('Nothing to add','err'); return; }
+  const list = raw.split(/[\n,;]+/).map(w=>w.trim()).filter(Boolean);
+  list.forEach(addOne); ta.value = '';
+  renderChips(); updateHeader();
+  toast(`Added ${list.length} words`, 'ok');
+}
+function addOne(w) {
+  const clean = w.trim(); if (!clean) return;
+  if (state.words.find(x => x.word.toLowerCase() === clean.toLowerCase())) return;
+  state.words.push({ id: Date.now()+Math.random(), word: clean, status:'new', card:null, score:0, attempts:0 });
+  saveState();
+}
+function removeWord(id) {
+  state.words = state.words.filter(w => String(w.id) !== String(id));
+  saveState(); renderChips(); updateHeader();
+}
+function clearAll() {
+  if (!confirm('Remove all words from active deck?')) return;
+  state.words = []; saveState(); renderChips(); updateHeader();
+}
+function renderChips() {
+  const g = document.getElementById('chipGrid');
+  g.innerHTML = state.words.map(w => `
+    <div class="chip ${w.status}">
+      <div class="chip-dot"></div>
+      <span class="mono">${w.word}</span>
+      <button class="chip-rm" onclick="removeWord('${w.id}')">×</button>
+    </div>`).join('');
+  const hasAny = state.words.length > 0;
+  const hasNew = state.words.some(w=>w.status==='new');
+  const hasLoaded = state.words.some(w=>w.status==='loaded');
+  document.getElementById('genAllBtn').style.display = hasNew ? '' : 'none';
+  document.getElementById('startBtn').style.display = hasLoaded ? '' : 'none';
+  document.getElementById('archiveBtn').style.display = hasLoaded ? '' : 'none';
+  document.getElementById('clearBtn').style.display = hasAny ? '' : 'none';
+}
+
+// ═══════════════════════════════════════════════
+//  FILE UPLOAD
+// ═══════════════════════════════════════════════
+function handleFile(e) {
+  const f = e.target.files[0]; if (!f) return;
+  const ext = f.name.split('.').pop().toLowerCase();
+  if (ext==='txt'||ext==='csv') {
+    const r = new FileReader();
+    r.onload = ev => {
+      ev.target.result.split(/[\n,;]+/).map(l=>l.trim()).filter(Boolean).forEach(addOne);
+      renderChips(); updateHeader(); toast('File loaded!','ok');
+    };
+    r.readAsText(f);
+  } else if (ext==='pdf') {
+    extractPDF(f);
+  } else {
+    toast('Use .txt, .csv or .pdf','err');
+  }
+}
+async function extractPDF(f) {
+  if (!apiKey) { toast('Enter API key first','err'); return; }
+  toast('Reading PDF…','');
+  const r = new FileReader();
+  r.onload = async e => {
+    const b64 = e.target.result.split(',')[1];
+    try {
+      const resp = await apiCall({
+        messages:[{role:'user',content:[
+          {type:'document',source:{type:'base64',media_type:'application/pdf',data:b64}},
+          {type:'text',text:'Extract all German vocabulary words from this document. Return ONLY a JSON array of strings like ["Apfel","laufen"]. No markdown, no explanation.'}
+        ]}]
+      });
+      const list = JSON.parse(resp.replace(/```json|```/g,'').trim());
+      list.forEach(addOne); renderChips(); updateHeader();
+      toast(`${list.length} words extracted!`, 'ok');
+    } catch(err) { toast('PDF failed: '+err.message,'err'); }
+  };
+  r.readAsDataURL(f);
+}
+const dz = document.getElementById('dropZone');
+dz.addEventListener('dragover', e=>{e.preventDefault();dz.classList.add('drag');});
+dz.addEventListener('dragleave', ()=>dz.classList.remove('drag'));
+dz.addEventListener('drop', e=>{
+  e.preventDefault(); dz.classList.remove('drag');
+  const f = e.dataTransfer.files[0];
+  if (f) handleFile({target:{files:[f]}});
+});
+
+// ═══════════════════════════════════════════════
+//  API CALL HELPER
+// ═══════════════════════════════════════════════
+async function apiCall(opts) {
+  const resp = await fetch('https://api.anthropic.com/v1/messages', {
+    method:'POST',
+    headers:{
+      'Content-Type':'application/json',
+      'x-api-key': apiKey,
+      'anthropic-version':'2023-06-01',
+      'anthropic-dangerous-direct-browser-calls':'true'
+    },
+    body: JSON.stringify({ model:'claude-sonnet-4-6', max_tokens:1000, ...opts })
+  });
+  const d = await resp.json();
+  if (d.error) throw new Error(JSON.stringify(d.error));
+  return d.content.map(c=>c.text||'').join('');
+}
+
+// ═══════════════════════════════════════════════
+//  GENERATE CARDS
+// ═══════════════════════════════════════════════
+async function genAll() {
+  if (!apiKey) { toast('Enter your API key first','err'); return; }
+  const newW = state.words.filter(w=>w.status==='new');
+  if (!newW.length) return;
+  const btn = document.getElementById('genAllBtn');
+  btn.disabled = true; btn.textContent = '⏳ Generating…';
+  for (const w of newW) {
+    await genCard(w);
+    await new Promise(r=>setTimeout(r,350));
+  }
+  btn.disabled = false; btn.textContent = '⚡ Generate Cards';
+  toast('All cards ready! 🎉','ok');
+  renderChips(); updateHeader();
+}
+async function genCard(wo) {
+  for (let attempt=1; attempt<=3; attempt++) {
+    wo.status = 'loading'; renderChips();
+    try {
+      const prompt = `You are a German language teacher. Create a vocabulary card for: "${wo.word}"
+Reply ONLY with valid JSON, no markdown, no backticks, no extra text:
+{"word":"${wo.word}","article":"der/die/das if noun else empty","plural":"plural with article if noun else empty","partOfSpeech":"noun/verb/adjective/adverb/etc","ipa":"/IPA/","pronunciationGuide":"syllable guide e.g. AHP-fel","translationRu":"Russian","translationUz":"Uzbek","examples":[{"de":"sentence","ru":"translation"},{"de":"sentence","ru":"translation"},{"de":"sentence","ru":"translation"}],"grammar":["fact1","fact2","fact3"],"mnemonic":"memory trick in Russian or English"}`;
+      const raw = await apiCall({ messages:[{role:'user',content:prompt}] });
+      wo.card = JSON.parse(raw.replace(/```json|```/g,'').trim());
+      wo.status = 'loaded';
+      toast('✅ '+wo.word,'ok');
+      saveState(); return;
+    } catch(e) {
+      const msg = e.message||'';
+      if ((msg.includes('exceeded_limit')||msg.includes('concurrent')) && attempt<3) {
+        toast(`⏳ Rate limit, retrying ${wo.word}…`,'');
+        await new Promise(r=>setTimeout(r,attempt*2200));
+      } else {
+        wo.status = 'error';
+        toast('❌ '+wo.word,'err');
+        saveState(); return;
+      }
+    }
+  }
+}
+
+// ═══════════════════════════════════════════════
+//  FLASHCARDS
+// ═══════════════════════════════════════════════
+function renderLearn() {
+  const loaded = state.words.filter(w=>w.status==='loaded');
+  document.getElementById('learnEmpty').style.display = loaded.length ? 'none' : '';
+  document.getElementById('learnContent').style.display = loaded.length ? '' : 'none';
+  if (!loaded.length) return;
+  deckOrder = loaded.map((_,i)=>i);
+  deckIdx = 0; flipped = false;
+  showCard(loaded, 0);
+}
+function showCard(loaded, idx) {
+  const w = loaded[deckOrder[idx]]; const c = w.card;
+  flipped = false;
+  document.getElementById('fcInner').classList.remove('flipped');
+  document.getElementById('deckCtr').textContent = `${idx+1} / ${loaded.length}`;
+  currentSpeak = c.word;
+  const art = document.getElementById('fcArticle');
+  if (c.article||c.partOfSpeech) {
+    art.style.display=''; art.textContent=(c.article?c.article+' · ':'')+c.partOfSpeech;
+  } else art.style.display='none';
+  document.getElementById('fcWord').textContent = c.word;
+  document.getElementById('fcIpa').textContent = c.ipa||'';
+  document.getElementById('fcPron').textContent = c.pronunciationGuide ? '📖 '+c.pronunciationGuide : '';
+  const sb = document.getElementById('speakBtn');
+  sb.style.display='inline-flex';
+  document.getElementById('speakLbl').textContent='Pronounce';
+  document.getElementById('speakIcon').style.display='';
+  document.getElementById('speakWave').classList.remove('show');
+  sb.classList.remove('playing');
+  const er = document.getElementById('speakErr');
+  if (er) er.style.display='none';
+  document.getElementById('bkTrans').innerHTML = `
+    <div class="trans-row"><span class="lang-tag">RU</span><span>${c.translationRu||'—'}</span></div>
+    <div class="trans-row" style="margin-top:4px;"><span class="lang-tag">UZ</span><span>${c.translationUz||'—'}</span></div>
+    ${c.plural?`<div class="trans-row" style="margin-top:4px;"><span class="lang-tag">PL</span><span class="text-muted" style="font-size:13px;">${c.plural}</span></div>`:''}`;
+  document.getElementById('bkEx').innerHTML = (c.examples||[]).map(ex=>
+    `<div class="ex-item"><div class="ex-de">${ex.de}</div><div class="ex-ru">${ex.ru}</div></div>`).join('');
+  document.getElementById('bkGram').innerHTML = (c.grammar||[]).map(g=>`<span class="gram-chip">${g}</span>`).join('');
+  if (c.mnemonic) { document.getElementById('bkMnemSec').style.display=''; document.getElementById('bkMnem').textContent=c.mnemonic; }
+  else document.getElementById('bkMnemSec').style.display='none';
+}
+function flipCard() { flipped=!flipped; document.getElementById('fcInner').classList.toggle('flipped',flipped); }
+function nextCard() { const l=state.words.filter(w=>w.status==='loaded'); if(!l.length)return; deckIdx=(deckIdx+1)%l.length; showCard(l,deckIdx); }
+function prevCard() { const l=state.words.filter(w=>w.status==='loaded'); if(!l.length)return; deckIdx=(deckIdx-1+l.length)%l.length; showCard(l,deckIdx); }
+function shuffleDeck() { deckOrder=deckOrder.sort(()=>Math.random()-.5); deckIdx=0; showCard(state.words.filter(w=>w.status==='loaded'),0); toast('Shuffled 🔀',''); }
+function rate(r) {
+  const l=state.words.filter(w=>w.status==='loaded'); if(!l.length)return;
+  const w=l[deckOrder[deckIdx]];
+  w.attempts=(w.attempts||0)+1;
+  if(r==='easy') w.score=Math.min((w.score||0)+2,10);
+  if(r==='ok')   w.score=Math.min((w.score||0)+1,10);
+  if(r==='hard') w.score=Math.max((w.score||0)-1,0);
+  const today=new Date().toISOString().slice(0,10);
+  state.sessions.push(today);
+  if(state.sessions.length>600) state.sessions.splice(0,state.sessions.length-600);
+  saveState(); nextCard();
+}
+
+// ═══════════════════════════════════════════════
+//  QUIZ
+// ═══════════════════════════════════════════════
+function selMode(m,el) {
+  qMode=m;
+  document.querySelectorAll('.mode-tile').forEach(t=>t.classList.remove('sel'));
+  el.classList.add('sel');
+}
+function showQuizHome() {
+  document.getElementById('quizHome').style.display='';
+  document.getElementById('quizActive').style.display='none';
+  document.getElementById('quizScore').style.display='none';
+}
+function startQuiz() {
+  const l=state.words.filter(w=>w.status==='loaded');
+  if(l.length<2){toast('Need at least 2 cards!','err');return;}
+  qQueue=[...l].sort(()=>Math.random()-.5).slice(0,Math.min(10,l.length));
+  qCur=0; qScore=0;
+  document.getElementById('quizHome').style.display='none';
+  document.getElementById('quizActive').style.display='';
+  document.getElementById('quizScore').style.display='none';
+  renderQ();
+}
+function renderQ() {
+  if(qCur>=qQueue.length){showScore();return;}
+  document.getElementById('qBar').style.width=(qCur/qQueue.length*100)+'%';
+  const w=qQueue[qCur]; const l=state.words.filter(x=>x.status==='loaded');
+  const spkBtn = `<div style="text-align:center;margin-bottom:16px;"><button class="speak-btn" style="margin:0 auto;" onclick="doSpeak('${w.card.word.replace(/'/g,"\\'")}')">🔊 Pronounce</button></div>`;
+  let html='';
+  if(qMode==='mc'){
+    const wrong=l.filter(x=>x.id!==w.id).sort(()=>Math.random()-.5).slice(0,3);
+    const opts=[...wrong,w].sort(()=>Math.random()-.5);
+    html=`<div class="q-word">${w.card.article?w.card.article+' ':''}${w.card.word}</div>
+      <div class="q-sub">What is the Russian translation?</div>${spkBtn}
+      <div class="q-opts">${opts.map(o=>`<button class="q-opt" data-id="${o.id}" onclick="chkMC(this,'${w.id}','${o.id}')">${o.card.translationRu}</button>`).join('')}</div>`;
+  } else if(qMode==='type'){
+    html=`<div class="q-word" style="font-size:22px;">${w.card.translationRu}</div>
+      <div class="q-sub">Write this in German</div>
+      <input class="q-inp" id="qInp" placeholder="German word…" onkeydown="if(event.key==='Enter')chkType('${w.card.word.replace(/'/g,"\\'")}')">
+      <div style="text-align:center;"><button class="btn btn-gold" onclick="chkType('${w.card.word.replace(/'/g,"\\'")}')">Check →</button></div>
+      <div id="qFb"></div>`;
+  } else if(qMode==='fill'){
+    const ex=w.card.examples&&w.card.examples[0];
+    if(!ex){qCur++;renderQ();return;}
+    const blank=ex.de.replace(new RegExp(w.card.word.replace(/[.*+?^${}()|[\]\\]/g,'\\$&'),'gi'),'_______');
+    html=`<div class="q-word" style="font-size:18px;line-height:1.5;">"${blank}"</div>
+      <div class="q-sub">${ex.ru}</div>
+      <input class="q-inp" id="qInp" placeholder="Fill in the blank…" onkeydown="if(event.key==='Enter')chkFill('${w.card.word.replace(/'/g,"\\'")}')">
+      <div style="text-align:center;"><button class="btn btn-gold" onclick="chkFill('${w.card.word.replace(/'/g,"\\'")}')">Check →</button></div>
+      <div id="qFb"></div>`;
+  } else if(qMode==='gender'){
+    if(!w.card.article||!['der','die','das'].includes(w.card.article.toLowerCase())){qCur++;renderQ();return;}
+    html=`<div class="q-word">${w.card.word}</div>
+      <div class="q-sub">What is the correct article?</div>${spkBtn}
+      <div class="q-opts">${['der','die','das'].map(g=>`<button class="q-opt" onclick="chkGender(this,'${w.card.article.toLowerCase()}','${g}')">${g}</button>`).join('')}</div>`;
+  }
+  document.getElementById('qBody').innerHTML=html;
+}
+function chkMC(btn,cId,clId){
+  document.querySelectorAll('.q-opt').forEach(b=>b.disabled=true);
+  const ok=cId===clId; btn.classList.add(ok?'ok':'no');
+  if(!ok) document.querySelectorAll('.q-opt').forEach(b=>{if(b.dataset.id===cId)b.classList.add('ok');});
+  if(ok)qScore++;
+  setTimeout(()=>{qCur++;renderQ();},1100);
+}
+function chkGender(btn,correct,clicked){
+  document.querySelectorAll('.q-opt').forEach(b=>b.disabled=true);
+  const ok=correct===clicked; btn.classList.add(ok?'ok':'no');
+  if(!ok) document.querySelectorAll('.q-opt').forEach(b=>{if(b.textContent===correct)b.classList.add('ok');});
+  if(ok)qScore++;
+  setTimeout(()=>{qCur++;renderQ();},1100);
+}
+function chkType(correct){
+  const inp=document.getElementById('qInp');
+  const ok=inp.value.trim().toLowerCase()===correct.toLowerCase();
+  inp.classList.add(ok?'ok':'no');
+  document.getElementById('qFb').innerHTML=`<div class="q-fb ${ok?'ok':'no'}">${ok?'✅ Correct!':'❌ '+correct}</div>`;
+  if(ok)qScore++;
+  setTimeout(()=>{qCur++;renderQ();},1400);
+}
+function chkFill(correct){
+  const inp=document.getElementById('qInp');
+  const ok=inp.value.trim().toLowerCase()===correct.toLowerCase();
+  inp.classList.add(ok?'ok':'no');
+  document.getElementById('qFb').innerHTML=`<div class="q-fb ${ok?'ok':'no'}">${ok?'✅ Correct!':'❌ '+correct}</div>`;
+  if(ok)qScore++;
+  setTimeout(()=>{qCur++;renderQ();},1400);
+}
+function showScore(){
+  document.getElementById('quizActive').style.display='none';
+  document.getElementById('quizScore').style.display='';
+  const pct=Math.round(qScore/qQueue.length*100);
+  const c=314;
+  document.getElementById('scoreCir').style.strokeDashoffset=c-(c*pct/100);
+  document.getElementById('scorePct').textContent=pct+'%';
+  document.getElementById('scoreEmoji').textContent=pct>=80?'🎉':pct>=50?'📈':'💪';
+  document.getElementById('scoreSub').textContent=`${qScore} / ${qQueue.length} correct`;
+}
+
+// ═══════════════════════════════════════════════
+//  PROGRESS DASHBOARD
+// ═══════════════════════════════════════════════
+function renderProgress(){
+  const l=state.words.filter(w=>w.status==='loaded');
+  const body=document.getElementById('progressBody');
+  if(!l.length){
+    body.innerHTML=`<div class="empty-state"><div class="ei">📊</div><h3>No data yet</h3><p>Generate cards and practice to see stats.</p></div>`;
+    return;
+  }
+  const total=l.length;
+  const mastered=l.filter(w=>(w.score||0)>=7).length;
+  const learning=l.filter(w=>(w.score||0)>=3&&(w.score||0)<7).length;
+  const newW=l.filter(w=>(w.score||0)<3).length;
+  const totalRev=l.reduce((s,w)=>s+(w.attempts||0),0);
+  const avgScore=total?(l.reduce((s,w)=>s+(w.score||0),0)/total).toFixed(1):0;
+  const mastPct=Math.round(mastered/total*100);
+  const pos={};
+  l.forEach(w=>{const p=(w.card.partOfSpeech||'other').toLowerCase();pos[p]=(pos[p]||0)+1;});
+  const posE=Object.entries(pos).sort((a,b)=>b[1]-a[1]).slice(0,6);
+  const maxPos=posE[0]?posE[0][1]:1;
+  const r=54,circ=2*Math.PI*r;
+  const mS=mastered/total*circ, lS=learning/total*circ, nS=newW/total*circ;
+  const today=new Date(); today.setHours(0,0,0,0);
+  const cells=Array.from({length:35},(_,i)=>{
+    const d=new Date(today); d.setDate(d.getDate()-(34-i));
+    const key=d.toISOString().slice(0,10);
+    const cnt=state.sessions.filter(s=>s===key).length;
+    const lv=cnt===0?'':cnt<=2?'l1':cnt<=5?'l2':'l3';
+    return `<div class="hm ${lv}" title="${key}: ${cnt} reviews"></div>`;
+  }).join('');
+
+  body.innerHTML=`
+    <div class="kpi-grid">
+      <div class="kpi"><div class="kpi-val">${total}</div><div class="kpi-lbl">Total Words</div></div>
+      <div class="kpi"><div class="kpi-val" style="color:var(--green)">${mastered}</div><div class="kpi-lbl">Mastered</div></div>
+      <div class="kpi"><div class="kpi-val" style="color:var(--gold)">${learning}</div><div class="kpi-lbl">In Progress</div></div>
+      <div class="kpi"><div class="kpi-val">${newW}</div><div class="kpi-lbl">New</div></div>
+      <div class="kpi"><div class="kpi-val">${totalRev}</div><div class="kpi-lbl">Reviews</div></div>
+      <div class="kpi"><div class="kpi-val">${avgScore}</div><div class="kpi-lbl">Avg Score</div></div>
+    </div>
+
+    <div class="card card-pad gap-y-lg">
+      <div class="section-head">Mastery Breakdown</div>
+      <div class="donut-layout">
+        <div class="donut-wrap">
+          <svg width="140" height="140" viewBox="0 0 140 140">
+            <circle cx="70" cy="70" r="${r}" fill="none" stroke="var(--line)" stroke-width="13"/>
+            ${mastered?`<circle cx="70" cy="70" r="${r}" fill="none" stroke="var(--green)" stroke-width="13" stroke-dasharray="${mS} ${circ-mS}" stroke-dashoffset="0"/>`:''}
+            ${learning?`<circle cx="70" cy="70" r="${r}" fill="none" stroke="var(--gold)" stroke-width="13" stroke-dasharray="${lS} ${circ-lS}" stroke-dashoffset="${-mS}"/>`:''}
+            ${newW?`<circle cx="70" cy="70" r="${r}" fill="none" stroke="var(--line2)" stroke-width="13" stroke-dasharray="${nS} ${circ-nS}" stroke-dashoffset="${-(mS+lS)}"/>`:''}
+          </svg>
+          <div class="donut-center"><div class="donut-val">${mastPct}%</div><div class="donut-sub">mastered</div></div>
+        </div>
+        <div class="legend">
+          <div class="leg-row"><div class="leg-dot" style="background:var(--green)"></div><span>Mastered (≥7)</span><span class="leg-val" style="color:var(--green)">${mastered}</span></div>
+          <div class="leg-row"><div class="leg-dot" style="background:var(--gold)"></div><span>Learning (3–6)</span><span class="leg-val" style="color:var(--gold)">${learning}</span></div>
+          <div class="leg-row"><div class="leg-dot" style="background:var(--line2)"></div><span>New (0–2)</span><span class="leg-val">${newW}</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card card-pad gap-y-lg" style="margin-top:12px;">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
+        <div class="section-head" style="margin-bottom:0;">Activity — Last 35 Days</div>
+        <div class="text-sm text-muted" style="display:flex;gap:8px;align-items:center;">
+          <span style="width:10px;height:10px;background:rgba(232,160,32,.2);border-radius:2px;display:inline-block;"></span>1–2
+          <span style="width:10px;height:10px;background:rgba(232,160,32,.5);border-radius:2px;display:inline-block;"></span>3–5
+          <span style="width:10px;height:10px;background:var(--gold);border-radius:2px;display:inline-block;"></span>6+
+        </div>
+      </div>
+      <div class="heatmap">${cells}</div>
+    </div>
+
+    ${posE.length?`
+    <div class="card card-pad" style="margin-top:12px;">
+      <div class="section-head">Words by Type</div>
+      <div class="pos-bars">
+        ${posE.map(([p,n])=>`<div class="pos-row">
+          <div class="pos-lbl">${p}</div>
+          <div class="pos-track"><div class="pos-fill" style="width:${Math.round(n/maxPos*100)}%"></div></div>
+          <div class="pos-n">${n}</div>
+        </div>`).join('')}
+      </div>
+    </div>`:''}
+  `;
+}
+function resetProgress(){
+  if(!confirm('Reset all scores? Words and cards stay.'))return;
+  state.words.forEach(w=>{w.score=0;w.attempts=0;});
+  state.sessions=[];
+  saveState(); renderProgress(); toast('Progress reset','ok');
+}
+
+// ═══════════════════════════════════════════════
+//  ARCHIVE
+// ═══════════════════════════════════════════════
+function archiveDeck(){
+  const loaded=state.words.filter(w=>w.status==='loaded');
+  if(!loaded.length){toast('No loaded cards to archive','err');return;}
+  openModal('Archive Current Deck',`
+    <div style="margin-bottom:12px;"><label class="text-sm text-muted" style="display:block;margin-bottom:6px;">Deck name</label>
+    <input class="input" id="archName" placeholder="e.g. Lektion 6" value="Deck ${new Date().toLocaleDateString()}"></div>
+    <div class="text-sm text-muted">${loaded.length} cards will be saved to the archive. The active deck stays unchanged.</div>
+  `,[
+    {label:'Cancel',cls:'btn-ghost',fn:'closeModal()'},
+    {label:'Archive',cls:'btn-gold',fn:'doArchive()'}
+  ]);
+}
+function doArchive(){
+  const name=document.getElementById('archName')?.value||'Untitled';
+  const loaded=state.words.filter(w=>w.status==='loaded');
+  state.archives.unshift({
+    id:Date.now(), name, date:new Date().toISOString(),
+    words: JSON.parse(JSON.stringify(loaded))
+  });
+  saveState(); closeModal(); renderArchive(); updateArchBadge();
+  toast(`"${name}" archived 📦`,'ok');
+}
+function openNewDeckModal(){
+  openModal('Create New Deck',`
+    <div class="text-sm text-muted">Give this archive deck a name. You can populate it by archiving your active deck.</div>
+  `,[{label:'OK',cls:'btn-gold',fn:'closeModal()'}]);
+}
+function renderArchive(){
+  const body=document.getElementById('archiveBody');
+  if(!state.archives.length){
+    body.innerHTML=`<div class="empty-state"><div class="ei">🗂</div><h3>No archived decks</h3><p>Finish a deck and click "Archive Deck" to save it here.</p></div>`;
+    updateArchBadge(); return;
+  }
+  body.innerHTML=`<div class="archive-grid">${state.archives.map(a=>{
+    const mastered=a.words.filter(w=>(w.score||0)>=7).length;
+    const date=new Date(a.date).toLocaleDateString();
+    return `<div class="arch-card">
+      <div class="arch-icon">📦</div>
+      <div class="arch-body">
+        <div class="arch-name">${a.name}</div>
+        <div class="arch-meta">${a.words.length} words · Saved ${date} · <span style="color:var(--green)">${mastered} mastered</span></div>
+      </div>
+      <div class="arch-actions">
+        <button class="btn btn-ghost btn-xs" onclick="restoreDeck(${a.id})">↩ Restore</button>
+        <button class="btn btn-ghost btn-xs" onclick="reviewDeck(${a.id})">📖 Review</button>
+        <button class="btn btn-red btn-xs" onclick="deleteArchive(${a.id})">🗑</button>
+      </div>
+    </div>`;
+  }).join('')}</div>`;
+  updateArchBadge();
+}
+function restoreDeck(id){
+  const arch=state.archives.find(a=>a.id===id);
+  if(!arch)return;
+  if(!confirm(`Restore "${arch.name}" to active deck? Current active words will be replaced.`))return;
+  state.words=JSON.parse(JSON.stringify(arch.words));
+  saveState(); renderChips(); updateHeader();
+  nav('add', document.querySelector('.nav-item'));
+  toast(`"${arch.name}" restored`,'ok');
+}
+function reviewDeck(id){
+  const arch=state.archives.find(a=>a.id===id);
+  if(!arch)return;
+  // Temporarily set as review deck
+  const prev=state.words;
+  state.words=JSON.parse(JSON.stringify(arch.words));
+  nav('learn', document.querySelectorAll('.nav-item')[1]);
+  toast(`Reviewing "${arch.name}" — changes won't be saved`,'');
+  // Restore after leaving learn page (simple approach: don't save)
+  state.words=prev;
+}
+function deleteArchive(id){
+  if(!confirm('Delete this archive?'))return;
+  state.archives=state.archives.filter(a=>a.id!==id);
+  saveState(); renderArchive(); toast('Deleted','ok');
+}
+function updateArchBadge(){
+  const b=document.getElementById('archBadge');
+  if(state.archives.length){b.style.display='';b.textContent=state.archives.length;}
+  else b.style.display='none';
+}
+
+// ═══════════════════════════════════════════════
+//  SETTINGS
+// ═══════════════════════════════════════════════
+function renderSettings(){
+  const si=document.getElementById('settingsKey');
+  if(si){si.placeholder=apiKey?apiKey.slice(0,8)+'••••••':'sk-ant-…';}
+  updateKeyUI();
+}
+function exportData(){
+  const blob=new Blob([JSON.stringify(state,null,2)],{type:'application/json'});
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(blob);
+  a.download='deutsch-lab-backup.json';
+  a.click();
+}
+function importData(e){
+  const f=e.target.files[0]; if(!f)return;
+  const r=new FileReader();
+  r.onload=ev=>{
+    try{
+      const d=JSON.parse(ev.target.result);
+      if(d.words||d.archives){
+        state={...state,...d};
+        saveState(); renderChips(); updateHeader(); updateArchBadge();
+        toast('Data imported!','ok');
+      } else toast('Invalid backup file','err');
+    }catch(e){toast('Import failed','err');}
+  };
+  r.readAsText(f);
+}
+function nukeAll(){
+  if(!confirm('Delete ALL data? This cannot be undone.'))return;
+  localStorage.removeItem('dl2-state');
+  localStorage.removeItem('dl2-key');
+  localStorage.removeItem('dl2-theme');
+  location.reload();
+}
+
+// ═══════════════════════════════════════════════
+//  MODAL
+// ═══════════════════════════════════════════════
+function openModal(title,body,actions){
+  document.getElementById('modalTitle').textContent=title;
+  document.getElementById('modalBody').innerHTML=body;
+  document.getElementById('modalActions').innerHTML=actions.map(a=>
+    `<button class="btn ${a.cls}" onclick="${a.fn}">${a.label}</button>`).join('');
+  document.getElementById('modalBg').classList.add('open');
+}
+function closeModal(){ document.getElementById('modalBg').classList.remove('open'); }
+
+// ═══════════════════════════════════════════════
+//  UTILS
+// ═══════════════════════════════════════════════
+function updateHeader(){
+  document.getElementById('hdrTotal').textContent=state.words.length;
+  document.getElementById('hdrMastered').textContent=state.words.filter(w=>(w.score||0)>=7).length;
+}
+function toast(msg,type){
+  const t=document.createElement('div');
+  t.className='toast '+(type||'');
+  t.textContent=msg;
+  document.getElementById('toastStack').appendChild(t);
+  setTimeout(()=>t.remove(),3200);
+}
+
+// ═══════════════════════════════════════════════
+//  INIT
+// ═══════════════════════════════════════════════
+renderChips();
+updateHeader();
+updateArchBadge();
+</script>
+</body>
+</html>

@@ -1,0 +1,441 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Laboratory Safety Acknowledgment — CAU</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<style>
+  /* ---------- CONFIG NOTE ----------
+     Set BACKEND_URL below (Apps Script web-app URL) to archive submissions.
+     Leave "" to run in demo mode (PDF still generates).            */
+  :root{
+    --paper:#FAF9F5; --ink:#141821; --navy:#1B2A4A; --muted:#6B7280;
+    --hazard:#E8A317; --hazard-ink:#141821; --verified:#1E8E5A;
+    --line:#E3E1D8; --card:#FFFFFF; --danger:#B4232A;
+  }
+  *{box-sizing:border-box}
+  html{-webkit-text-size-adjust:100%}
+  body{
+    margin:0; background:var(--paper); color:var(--ink);
+    font-family:"Inter",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+    line-height:1.5; -webkit-font-smoothing:antialiased;
+  }
+  .wrap{max-width:760px; margin:0 auto; padding:0 20px 64px}
+
+  /* hazard stripe — the signature element */
+  .stripe{height:14px;background:repeating-linear-gradient(45deg,var(--hazard) 0 22px,var(--hazard-ink) 22px 44px)}
+
+  header.top{background:var(--navy); color:#fff; padding:22px 0 20px}
+  header.top .wrap{padding-bottom:0}
+  .eyebrow{font-size:11px; letter-spacing:.18em; text-transform:uppercase; color:#AEB9D0; font-weight:600}
+  header.top h1{font-size:23px; line-height:1.2; margin:.35em 0 .15em; font-weight:800; letter-spacing:-.01em}
+  header.top .sub{color:#C7CEDE; font-size:14px}
+  .lang{display:flex; gap:6px; margin-top:16px}
+  .lang button{
+    background:transparent; color:#C7CEDE; border:1px solid #33436A; border-radius:999px;
+    padding:5px 13px; font-size:12px; font-weight:600; cursor:pointer; letter-spacing:.02em
+  }
+  .lang button.on{background:var(--hazard); color:var(--hazard-ink); border-color:var(--hazard)}
+
+  section{margin-top:28px}
+  .label{font-size:11px; letter-spacing:.16em; text-transform:uppercase; color:var(--muted); font-weight:700; margin-bottom:10px}
+
+  .rules{background:var(--card); border:1px solid var(--line); border-radius:14px; overflow:hidden}
+  .rules ol{margin:0; padding:6px 0; list-style:none; counter-reset:r}
+  .rules li{
+    counter-increment:r; display:grid; grid-template-columns:38px 1fr; gap:12px;
+    padding:13px 18px; border-bottom:1px solid var(--line); font-size:15px
+  }
+  .rules li:last-child{border-bottom:none}
+  .rules li::before{
+    content:counter(r,decimal-leading-zero); font-family:"Space Mono",ui-monospace,monospace;
+    font-size:13px; font-weight:700; color:var(--hazard); background:#FBF3DF;
+    border-radius:7px; height:28px; display:flex; align-items:center; justify-content:center
+  }
+
+  form{background:var(--card); border:1px solid var(--line); border-radius:14px; padding:20px}
+  .field{margin-bottom:16px}
+  .field label{display:block; font-size:13px; font-weight:600; margin-bottom:6px}
+  .field input[type=text]{
+    width:100%; padding:12px 14px; font-size:16px; border:1px solid #D5D3C9;
+    border-radius:10px; background:#fff; color:var(--ink); font-family:inherit
+  }
+  .field input:focus{outline:2px solid var(--navy); outline-offset:1px; border-color:var(--navy)}
+  .row2{display:grid; grid-template-columns:1fr 1fr; gap:14px}
+  @media(max-width:520px){.row2{grid-template-columns:1fr}}
+
+  .sigwrap{border:1px dashed #C4C2B7; border-radius:10px; background:#fff; position:relative}
+  canvas#sig{width:100%; height:150px; display:block; touch-action:none; border-radius:10px}
+  .sighint{position:absolute; left:14px; top:12px; color:#B9B7AC; font-size:13px; pointer-events:none}
+  .sigbar{display:flex; justify-content:space-between; align-items:center; margin-top:8px}
+  .sigbar button{background:none; border:none; color:var(--navy); font-weight:600; font-size:13px; cursor:pointer; text-decoration:underline; padding:4px}
+
+  .agree{display:grid; grid-template-columns:22px 1fr; gap:12px; align-items:start;
+    background:#FBF3DF; border:1px solid #EBD9A6; border-radius:10px; padding:14px 16px; margin:6px 0 18px}
+  .agree input{width:20px; height:20px; margin-top:1px; accent-color:var(--navy)}
+  .agree label{font-size:14px}
+
+  .submit{
+    width:100%; padding:16px; font-size:16px; font-weight:700; letter-spacing:.02em;
+    background:var(--navy); color:#fff; border:none; border-radius:12px; cursor:pointer
+  }
+  .submit:disabled{opacity:.45; cursor:not-allowed}
+  .err{color:var(--danger); font-size:13px; margin-top:10px; min-height:18px; font-weight:600}
+
+  /* stamped confirmation */
+  .stamp{display:none; text-align:center; padding:34px 20px}
+  .stamp.show{display:block}
+  .seal{
+    display:inline-block; border:3px solid var(--verified); color:var(--verified);
+    border-radius:14px; padding:14px 22px; transform:rotate(-4deg);
+    font-family:"Space Mono",ui-monospace,monospace; font-weight:700; letter-spacing:.06em
+  }
+  .seal .big{font-size:20px; display:block; letter-spacing:.14em}
+  .stamp h2{margin:22px 0 6px; font-size:22px}
+  .stamp p{color:var(--muted); margin:4px 0}
+  .cid{font-family:"Space Mono",ui-monospace,monospace; font-weight:700; color:var(--ink);
+    background:#F1EFE6; border:1px solid var(--line); border-radius:8px; padding:8px 12px; display:inline-block; margin-top:6px}
+  .stamp .again{margin-top:24px; background:none; border:1px solid var(--line); border-radius:10px;
+    padding:11px 18px; font-weight:600; cursor:pointer}
+
+  footer{max-width:760px; margin:26px auto 0; padding:0 20px; color:var(--muted); font-size:12px}
+  .adminlink{color:var(--muted); text-decoration:underline; cursor:pointer; background:none; border:none; font-size:12px}
+</style>
+</head>
+<body>
+<div class="stripe"></div>
+<header class="top">
+  <div class="wrap">
+    <div class="eyebrow" id="t_eyebrow">Laboratory Safety · Acknowledgment Register</div>
+    <h1 id="t_title">Chemistry &amp; Biology Laboratory Safety Rules</h1>
+    <div class="sub"><span id="t_inst">Central Asian University — Tashkent</span> · <span id="t_year">Academic Year 2025 / 2026</span></div>
+    <div class="lang">
+      <button data-lang="en" class="on">EN</button>
+      <button data-lang="ru">RU</button>
+      <button data-lang="uz">UZ</button>
+    </div>
+  </div>
+</header>
+
+<div class="wrap">
+  <!-- FORM VIEW -->
+  <div id="formView">
+    <section>
+      <div class="label" id="t_rulesLabel">Read carefully</div>
+      <div class="rules"><ol id="rulesList"></ol></div>
+    </section>
+
+    <section>
+      <div class="label" id="t_signLabel">Sign to confirm</div>
+      <form id="frm" novalidate>
+        <div class="field">
+          <label for="fname" id="t_name">Full name</label>
+          <input type="text" id="fname" autocomplete="name">
+        </div>
+        <div class="row2">
+          <div class="field">
+            <label for="fid" id="t_id">Student ID</label>
+            <input type="text" id="fid" autocomplete="off">
+          </div>
+          <div class="field">
+            <label for="fprog" id="t_prog">Program &amp; year</label>
+            <input type="text" id="fprog" autocomplete="off">
+          </div>
+        </div>
+
+        <div class="field">
+          <label id="t_sigLabel">Signature</label>
+          <div class="sigwrap">
+            <canvas id="sig"></canvas>
+            <span class="sighint" id="t_sighint">Draw your signature here</span>
+          </div>
+          <div class="sigbar">
+            <span style="color:var(--muted);font-size:12px" id="t_date"></span>
+            <button type="button" id="clearSig" >Clear</button>
+          </div>
+        </div>
+
+        <div class="agree">
+          <input type="checkbox" id="agree">
+          <label for="agree" id="t_agree">I have read and understood the laboratory safety rules above, and I agree to follow them at all times.</label>
+        </div>
+
+        <button type="submit" class="submit" id="submitBtn" disabled>Confirm &amp; sign</button>
+        <div class="err" id="err"></div>
+      </form>
+    </section>
+  </div>
+
+  <!-- CONFIRMATION VIEW -->
+  <div class="stamp" id="doneView">
+    <div class="seal"><span class="big">SIGNED</span><span id="t_sealsub">Safety rules acknowledged</span></div>
+    <h2 id="t_thanks">Thank you, your acknowledgment is recorded</h2>
+    <p id="doneName"></p>
+    <p id="t_saved">A PDF receipt has been downloaded and your record has been filed in the lab archive.</p>
+    <div class="cid" id="doneCid"></div>
+    <div><button class="again" id="againBtn" >Sign another</button></div>
+  </div>
+</div>
+
+<footer>
+  <span id="t_foot">Records are stored securely for institutional compliance. Contact the lab supervisor with any questions.</span>
+  &nbsp;·&nbsp; <button class="adminlink" id="adminBtn">Staff</button>
+</footer>
+
+<script>
+/* =================== CONFIG =================== */
+const BACKEND_URL = "";          // paste your Google Apps Script /exec URL here
+const ACADEMIC_YEAR = "2025/26";
+const STAFF_PASSCODE = "1234";   // change this
+/* ============================================= */
+
+const i18n = {
+  en:{eyebrow:"Laboratory Safety · Acknowledgment Register",
+    title:"Chemistry & Biology Laboratory Safety Rules",
+    inst:"Central Asian University — Tashkent", year:"Academic Year 2025 / 2026",
+    rulesLabel:"Read carefully", signLabel:"Sign to confirm",
+    name:"Full name", id:"Student ID", prog:"Program & year", sigLabel:"Signature",
+    sighint:"Draw your signature here", clear:"Clear",
+    agree:"I have read and understood the laboratory safety rules above, and I agree to follow them at all times.",
+    submit:"Confirm & sign", sealsub:"Safety rules acknowledged",
+    thanks:"Thank you, your acknowledgment is recorded",
+    saved:"A PDF receipt has been downloaded and your record has been filed in the lab archive.",
+    nopdf:"Your record has been filed, but the PDF receipt could not be generated on this device. Note the confirmation ID below, or show this screen to your supervisor.",
+    again:"Sign another", foot:"Records are stored securely for institutional compliance.",
+    e_name:"Please enter your full name.", e_id:"Please enter your student ID.",
+    e_sig:"Please add your signature.", e_agree:"Please tick the box to confirm you agree.",
+    rules:["Wear a lab coat, closed-toe shoes, and safety goggles at all times.",
+      "No eating, drinking, or applying cosmetics in the laboratory.",
+      "Know the location of exits, the fire extinguisher, eyewash, and safety shower.",
+      "Tie back long hair; avoid loose clothing and dangling jewelry.",
+      "Never pipette by mouth — always use a pipette filler.",
+      "Label every container; never use an unlabeled reagent.",
+      "Handle acids, bases, and flammables only in the fume hood.",
+      "Report spills, breakages, and injuries to the instructor immediately.",
+      "Dispose of chemical and biological waste only in designated containers.",
+      "Wash your hands before leaving; clean your bench and return equipment.",
+      "No unauthorized experiments — follow the instructor's protocol.",
+      "Store incompatible chemicals separately and keep aisles clear."]},
+  ru:{eyebrow:"Техника безопасности · Журнал ознакомления",
+    title:"Правила безопасности химико-биологической лаборатории",
+    inst:"Центрально-Азиатский университет — Ташкент", year:"Учебный год 2025 / 2026",
+    rulesLabel:"Внимательно прочитайте", signLabel:"Подпишите для подтверждения",
+    name:"Полное имя", id:"Студенческий ID", prog:"Программа и курс", sigLabel:"Подпись",
+    sighint:"Поставьте подпись здесь", clear:"Очистить",
+    agree:"Я прочитал(а) и понял(а) правила безопасности лаборатории и обязуюсь их соблюдать.",
+    submit:"Подтвердить и подписать", sealsub:"Правила приняты",
+    thanks:"Спасибо, ваше подтверждение записано",
+    saved:"PDF-квитанция загружена, а ваша запись сохранена в архиве лаборатории.",
+    nopdf:"Ваша запись сохранена, но PDF-квитанцию не удалось создать на этом устройстве. Запишите код подтверждения ниже или покажите этот экран преподавателю.",
+    again:"Подписать ещё", foot:"Записи хранятся безопасно для институционального учёта.",
+    e_name:"Пожалуйста, введите полное имя.", e_id:"Пожалуйста, введите студенческий ID.",
+    e_sig:"Пожалуйста, поставьте подпись.", e_agree:"Отметьте галочку для подтверждения.",
+    rules:["Всегда носите халат, закрытую обувь и защитные очки.",
+      "Запрещено есть, пить и наносить косметику в лаборатории.",
+      "Знайте расположение выходов, огнетушителя, промывки для глаз и аварийного душа.",
+      "Завязывайте длинные волосы; избегайте свободной одежды и висящих украшений.",
+      "Никогда не пипетируйте ртом — используйте грушу/дозатор.",
+      "Маркируйте каждую ёмкость; не используйте немаркированные реактивы.",
+      "Работайте с кислотами, щелочами и горючими веществами только в вытяжном шкафу.",
+      "Немедленно сообщайте преподавателю о разливах, поломках и травмах.",
+      "Утилизируйте химические и биологические отходы только в специальные контейнеры.",
+      "Мойте руки перед уходом; убирайте рабочее место и возвращайте оборудование.",
+      "Никаких несанкционированных экспериментов — следуйте протоколу преподавателя.",
+      "Храните несовместимые химикаты отдельно и не загромождайте проходы."]},
+  uz:{eyebrow:"Laboratoriya xavfsizligi · Tanishuv jurnali",
+    title:"Kimyo va biologiya laboratoriyasi xavfsizlik qoidalari",
+    inst:"Central Asian University — Toshkent", year:"2025 / 2026 o‘quv yili",
+    rulesLabel:"Diqqat bilan o‘qing", signLabel:"Tasdiqlash uchun imzolang",
+    name:"To‘liq ism", id:"Talaba ID", prog:"Dastur va kurs", sigLabel:"Imzo",
+    sighint:"Imzoingizni shu yerga chizing", clear:"Tozalash",
+    agree:"Yuqoridagi laboratoriya xavfsizlik qoidalarini o‘qidim, tushundim va ularga doimo amal qilishga rozilik bildiraman.",
+    submit:"Tasdiqlash va imzolash", sealsub:"Qoidalar qabul qilindi",
+    thanks:"Rahmat, tasdig‘ingiz qayd etildi",
+    saved:"PDF kvitansiya yuklab olindi va yozuvingiz laboratoriya arxiviga saqlandi.",
+    nopdf:"Yozuvingiz saqlandi, ammo bu qurilmada PDF kvitansiya yaratilmadi. Quyidagi tasdiqlash kodini yozib oling yoki bu ekranni o‘qituvchingizga ko‘rsating.",
+    again:"Yana imzolash", foot:"Yozuvlar muassasa hisobi uchun xavfsiz saqlanadi.",
+    e_name:"Iltimos, to‘liq ismingizni kiriting.", e_id:"Iltimos, talaba ID raqamingizni kiriting.",
+    e_sig:"Iltimos, imzo qo‘ying.", e_agree:"Rozilikni tasdiqlash uchun katakchani belgilang.",
+    rules:["Doimo laboratoriya xalati, yopiq oyoq kiyim va himoya ko‘zoynagini taqing.",
+      "Laboratoriyada ovqatlanish, ichish va kosmetika ishlatish taqiqlanadi.",
+      "Chiqish yo‘llari, o‘t o‘chirgich, ko‘z yuvish moslamasi va favqulodda dush joyini biling.",
+      "Uzun sochni bog‘lang; keng kiyim va osilib turgan taqinchoqlardan saqlaning.",
+      "Hech qachon og‘iz bilan pipetka qilmang — pipetka nasosidan foydalaning.",
+      "Har bir idishni belgilang; belgilanmagan reagentni ishlatmang.",
+      "Kislota, ishqor va yonuvchi moddalar bilan faqat tortish shkafida ishlang.",
+      "To‘kilish, sinish va jarohatlar haqida o‘qituvchiga darhol xabar bering.",
+      "Kimyoviy va biologik chiqindilarni faqat belgilangan idishlarga tashlang.",
+      "Ketishdan oldin qo‘lni yuving; ish stolini tozalang va jihozlarni joyiga qo‘ying.",
+      "Ruxsatsiz tajribalar o‘tkazmang — o‘qituvchi protokoliga amal qiling.",
+      "Bir-biriga mos kelmaydigan moddalarni alohida saqlang va yo‘laklarni bo‘sh saqlang."]}
+};
+
+let lang="en", sessionRecords=[], lastPdfOk=true;
+const $=id=>document.getElementById(id);
+const today=new Date();
+const dstr=today.toLocaleDateString(undefined,{year:"numeric",month:"long",day:"numeric"});
+
+function applyLang(L){
+  lang=L; const t=i18n[L];
+  document.documentElement.lang=L;
+  $("t_eyebrow").textContent=t.eyebrow; $("t_title").textContent=t.title;
+  $("t_inst").textContent=t.inst; $("t_year").textContent=t.year;
+  $("t_rulesLabel").textContent=t.rulesLabel; $("t_signLabel").textContent=t.signLabel;
+  $("t_name").textContent=t.name; $("t_id").textContent=t.id; $("t_prog").textContent=t.prog;
+  $("t_sigLabel").textContent=t.sigLabel; $("t_sighint").textContent=t.sighint;
+  $("clearSig").textContent=t.clear; $("t_agree").textContent=t.agree;
+  $("submitBtn").textContent=t.submit; $("t_sealsub").textContent=t.sealsub;
+  $("t_thanks").textContent=t.thanks; $("t_saved").textContent=lastPdfOk?t.saved:t.nopdf;
+  $("againBtn").textContent=t.again; $("t_foot").textContent=t.foot;
+  $("t_date").textContent=dstr;
+  const ol=$("rulesList"); ol.innerHTML="";
+  t.rules.forEach(r=>{const li=document.createElement("li");li.textContent=r;ol.appendChild(li)});
+  document.querySelectorAll(".lang button").forEach(b=>b.classList.toggle("on",b.dataset.lang===L));
+}
+document.querySelectorAll(".lang button").forEach(b=>b.onclick=()=>applyLang(b.dataset.lang));
+
+/* ---------- signature pad ---------- */
+const cv=$("sig"), ctx=cv.getContext("2d"); let drawing=false, hasSig=false;
+function fitCanvas(){
+  const r=cv.getBoundingClientRect(), dpr=window.devicePixelRatio||1;
+  cv.width=r.width*dpr; cv.height=r.height*dpr; ctx.setTransform(dpr,0,0,dpr,0,0);
+  ctx.lineWidth=2.2; ctx.lineCap="round"; ctx.lineJoin="round"; ctx.strokeStyle="#141821";
+}
+function pos(e){const r=cv.getBoundingClientRect();const p=e.touches?e.touches[0]:e;return{x:p.clientX-r.left,y:p.clientY-r.top}}
+function start(e){e.preventDefault();drawing=true;const{x,y}=pos(e);ctx.beginPath();ctx.moveTo(x,y)}
+function move(e){if(!drawing)return;e.preventDefault();const{x,y}=pos(e);ctx.lineTo(x,y);ctx.stroke();hasSig=true;$("t_sighint").style.display="none";check()}
+function end(){drawing=false}
+cv.addEventListener("mousedown",start);cv.addEventListener("mousemove",move);window.addEventListener("mouseup",end);
+cv.addEventListener("touchstart",start,{passive:false});cv.addEventListener("touchmove",move,{passive:false});cv.addEventListener("touchend",end);
+$("clearSig").onclick=()=>{ctx.clearRect(0,0,cv.width,cv.height);hasSig=false;$("t_sighint").style.display="";check()};
+
+/* ---------- validation ---------- */
+function check(){
+  const ok=$("fname").value.trim() && $("fid").value.trim() && hasSig && $("agree").checked;
+  $("submitBtn").disabled=!ok; return ok;
+}
+["fname","fid"].forEach(id=>$(id).addEventListener("input",check));
+$("agree").addEventListener("change",check);
+
+/* ---------- confirmation id ---------- */
+function makeCid(){
+  const s="ABCDEFGHJKLMNPQRSTUVWXYZ23456789"; let x="";
+  for(let i=0;i<6;i++)x+=s[Math.floor(Math.random()*s.length)];
+  return `CAU-SAFE-${ACADEMIC_YEAR}-${x}`;
+}
+
+/* ---------- PDF ---------- */
+function buildPdf(rec){
+  const {jsPDF}=window.jspdf; const doc=new jsPDF({unit:"pt",format:"a4"});
+  const W=doc.internal.pageSize.getWidth(); const M=48; let y=54;
+  // hazard stripe
+  for(let x=0;x<W;x+=28){doc.setFillColor(x/28%2?20:232,x/28%2?24:163,x/28%2?33:23);doc.rect(x,0,28,10,"F");}
+  doc.setFont("helvetica","bold");doc.setFontSize(16);doc.setTextColor(20,24,33);
+  doc.text("Laboratory Safety Acknowledgment",M,y); y+=20;
+  doc.setFont("helvetica","normal");doc.setFontSize(10);doc.setTextColor(90,95,105);
+  doc.text(`${i18n.en.inst} · ${i18n.en.year}`,M,y); y+=26;
+  doc.setDrawColor(227,225,216);doc.line(M,y,W-M,y); y+=24;
+
+  doc.setTextColor(20,24,33);doc.setFontSize(11);
+  const field=(k,v)=>{doc.setFont("helvetica","bold");doc.text(k,M,y);doc.setFont("helvetica","normal");doc.text(v||"—",M+120,y);y+=20;};
+  field("Full name",rec.name);
+  field("Student ID",rec.sid);
+  field("Program & year",rec.prog);
+  field("Date",rec.date);
+  field("Confirmation ID",rec.cid);
+  y+=8; doc.setDrawColor(227,225,216);doc.line(M,y,W-M,y); y+=22;
+
+  doc.setFont("helvetica","bold");doc.setFontSize(11);doc.text("Rules acknowledged",M,y);y+=16;
+  doc.setFont("helvetica","normal");doc.setFontSize(9.5);doc.setTextColor(50,55,65);
+  i18n.en.rules.forEach((r,i)=>{
+    const lines=doc.splitTextToSize(`${String(i+1).padStart(2,"0")}.  ${r}`,W-2*M);
+    if(y>760){doc.addPage();y=54;}
+    doc.text(lines,M,y); y+=lines.length*13+2;
+  });
+  y+=14; if(y>720){doc.addPage();y=54;}
+  doc.setFont("helvetica","bold");doc.setTextColor(20,24,33);doc.setFontSize(10);
+  doc.text("Signature",M,y); y+=6;
+  if(rec.sig){doc.addImage(rec.sig,"PNG",M,y,180,68);}
+  doc.setDrawColor(200,198,188);doc.line(M,y+74,M+180,y+74); y+=92;
+  doc.setFont("helvetica","normal");doc.setFontSize(8.5);doc.setTextColor(120,125,135);
+  doc.text(`Signed electronically on ${rec.stamp}. This receipt confirms acknowledgment of the laboratory safety rules.`,M,y,{maxWidth:W-2*M});
+  return doc;
+}
+
+/* ---------- submit ---------- */
+$("frm").addEventListener("submit",async e=>{
+  e.preventDefault(); const t=i18n[lang]; const err=$("err"); err.textContent="";
+  if(!$("fname").value.trim()){err.textContent=t.e_name;return}
+  if(!$("fid").value.trim()){err.textContent=t.e_id;return}
+  if(!hasSig){err.textContent=t.e_sig;return}
+  if(!$("agree").checked){err.textContent=t.e_agree;return}
+
+  const rec={
+    name:$("fname").value.trim(), sid:$("fid").value.trim(),
+    prog:$("fprog").value.trim(), date:dstr, lang:lang,
+    cid:makeCid(), stamp:new Date().toISOString(), sig:cv.toDataURL("image/png")
+  };
+  $("submitBtn").disabled=true;
+
+  // 1) PDF receipt — may fail if the jsPDF CDN is unreachable, so say so
+  //    rather than promising a receipt the student never got
+  lastPdfOk=true;
+  try{ buildPdf(rec).save(`SafetyAck_${rec.sid}_${rec.cid}.pdf`); }
+  catch(_){ lastPdfOk=false; }
+  $("t_saved").textContent = lastPdfOk ? t.saved : t.nopdf;
+
+  // 2) archive to backend (best-effort)
+  if(BACKEND_URL){
+    try{
+      await fetch(BACKEND_URL,{method:"POST",mode:"no-cors",
+        headers:{"Content-Type":"text/plain;charset=utf-8"},
+        body:JSON.stringify(rec)});
+    }catch(_){}
+  }
+  sessionRecords.push({name:rec.name,sid:rec.sid,prog:rec.prog,date:rec.date,cid:rec.cid,stamp:rec.stamp});
+
+  // 3) confirmation
+  $("doneName").textContent=`${rec.name} · ${rec.sid}`;
+  $("doneCid").textContent=rec.cid;
+  $("formView").style.display="none"; $("doneView").classList.add("show");
+  window.scrollTo({top:0,behavior:"smooth"});
+});
+
+$("againBtn").onclick=()=>{
+  $("frm").reset(); ctx.clearRect(0,0,cv.width,cv.height); hasSig=false;
+  $("t_sighint").style.display=""; $("submitBtn").disabled=true; $("err").textContent="";
+  $("doneView").classList.remove("show"); $("formView").style.display="";
+};
+
+/* ---------- staff: export session CSV ---------- */
+$("adminBtn").onclick=()=>{
+  const code=prompt("Staff passcode:"); if(code!==STAFF_PASSCODE)return;
+  if(!sessionRecords.length){alert("No submissions in this session yet. The full archive is in your Google Sheet.");return;}
+  const head=["Name","Student ID","Program","Date","Confirmation ID","Timestamp"];
+  const rows=sessionRecords.map(r=>[r.name,r.sid,r.prog,r.date,r.cid,r.stamp]);
+  const csv=[head,...rows].map(r=>r.map(c=>`"${(c||"").replace(/"/g,'""')}"`).join(",")).join("\n");
+  const a=document.createElement("a");
+  a.href=URL.createObjectURL(new Blob([csv],{type:"text/csv"}));
+  a.download=`safety_session_${new Date().toISOString().slice(0,10)}.csv`; a.click();
+};
+
+/* init */
+applyLang("en"); fitCanvas();
+/* resize (incl. phone rotation and the on-screen keyboard) must not wipe a signature */
+let resizeT;
+window.addEventListener("resize",()=>{
+  const snap = hasSig ? cv.toDataURL() : null;
+  clearTimeout(resizeT);
+  resizeT=setTimeout(()=>{
+    fitCanvas();
+    if(snap){
+      const img=new Image();
+      img.onload=()=>{const r=cv.getBoundingClientRect();ctx.drawImage(img,0,0,r.width,r.height);};
+      img.src=snap;
+    }
+  },150);
+});
+</script>
+</body>
+</html>
